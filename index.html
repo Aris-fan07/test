@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Portal Eksperimen & Administrasi LPQ</title>
   
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -15,8 +15,9 @@
   <style>
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(16, 185, 129, 0.5); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(16, 185, 129, 0.4); border-radius: 10px; }
+    input, select, textarea { font-size: 16px !important; } 
     @media print { 
       @page { size: A4 portrait; margin: 0; } 
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; } 
@@ -28,22 +29,16 @@
       .print\:border-none { border: none !important; }
       .print\:w-full { width: 100% !important; }
       .print\:h-full { height: 100% !important; }
-      aside, header, button:not(.print-btn) { display: none !important; }
+      aside, header, .mobile-header, button:not(.print-btn) { display: none !important; }
       main { padding: 0 !important; margin: 0 !important; width: 100% !important; background: white !important; }
     }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-slate-50 text-slate-800">
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
-    
-    // API Key Anda yang baru (sudah dimasukkan)
-    const apiKey = "AQ.Ab8RN6K3KruSmXttd5sJKWrnrZ2xP_FUfzEyTlP8LEoWdifdcQ"; 
-
-    // URL Aplikasi GAS Anda (Biarkan kosong jika hanya ingin tes di browser lokal dulu)
-    const apiUrl = "GANTI_DENGAN_URL_WEB_APP_GAS_ANDA"; 
 
     const FAIcon = (faClass) => ({ size = 24, color, className = "" }) => {
       return (
@@ -53,190 +48,26 @@
       );
     };
 
-    const Upload = FAIcon('fa-upload');
-    const FileText = FAIcon('fa-file-lines');
-    const CheckCircle = FAIcon('fa-circle-check');
-    const User = FAIcon('fa-user');
-    const ShieldCheck = FAIcon('fa-shield-halved');
-    const Users = FAIcon('fa-users');
-    const FileSignature = FAIcon('fa-file-signature');
-    const AlertCircle = FAIcon('fa-circle-exclamation');
-    const Timer = FAIcon('fa-stopwatch');
-    const Download = FAIcon('fa-download');
-    const BarChart = FAIcon('fa-chart-column');
-    const Database = FAIcon('fa-database');
-    const RefreshCw = FAIcon('fa-arrows-rotate');
-    const UserCheck = FAIcon('fa-user-check');
-    const ClipboardList = FAIcon('fa-clipboard-list');
-    const BookOpen = FAIcon('fa-book-open');
-    const LineChart = FAIcon('fa-chart-line');
-    const Activity = FAIcon('fa-wave-square');
-    const X = FAIcon('fa-xmark');
-    const LogOut = FAIcon('fa-right-from-bracket');
-    const PlusCircle = FAIcon('fa-circle-plus');
-    const Clock = FAIcon('fa-clock');
-    const QrCode = FAIcon('fa-qrcode');
-    const FileSearch = FAIcon('fa-file-code');
-    const FileCheck = FAIcon('fa-file-circle-check');
-    const Search = FAIcon('fa-magnifying-glass');
-    const Lock = FAIcon('fa-lock');
-    const MessageSquare = FAIcon('fa-comments');
-
-    function App() {
-      const [testerInfo, setTesterInfo] = useState(null);
-      const [currentRole, setCurrentRole] = useState(null); 
-      
-      const [santriData, setSantriData] = useState([]);
-      const [ustadzData, setUstadzData] = useState([]);
-      const [dokumenReq, setDokumenReq] = useState([]);
-      const [researchLogs, setResearchLogs] = useState([]);
-      const [activeTab, setActiveTab] = useState('dashboard');
-      
-      const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
-      const showToast = (message, type = 'info') => {
-        setToast({ show: true, message, type });
-        setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 5000);
-      };
-
-      const hasOcrSantri = researchLogs.some(l => l.target === 'Santri' && l.method === 'OCR Gemini AI');
-      const hasOcrUstadz = researchLogs.some(l => l.target === 'Ustadz' && l.method === 'OCR Gemini AI');
-      const hasManual = researchLogs.some(l => l.method === 'Manual');
-      const isKuisionerUnlocked = hasOcrSantri && hasOcrUstadz && hasManual;
-
-      if (!testerInfo && currentRole !== 'admin' && currentRole !== 'public') {
-        return (
-          <React.Fragment>
-            <WelcomeTesterScreen setTesterInfo={setTesterInfo} setRole={setCurrentRole} showToast={showToast} />
-            <ToastNotification toast={toast} setToast={setToast} />
-          </React.Fragment>
-        );
-      }
-
-      if (!currentRole) {
-        return (
-          <React.Fragment>
-            <LoginScreen setRole={setCurrentRole} testerInfo={testerInfo} />
-            <ToastNotification toast={toast} setToast={setToast} />
-          </React.Fragment>
-        );
-      }
-
-      if (currentRole === 'public') {
-        return (
-          <React.Fragment>
-            <PublicVerificationScreen onBack={() => { setCurrentRole(null); setActiveTab('dashboard'); }} dokumenReq={dokumenReq} />
-            <ToastNotification toast={toast} setToast={setToast} />
-          </React.Fragment>
-        );
-      }
-      
-      return (
-        <div className="min-h-screen flex flex-col md:flex-row font-sans">
-          <aside className="w-full md:w-72 bg-emerald-900 text-white flex flex-col shadow-2xl z-10 print:hidden relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-800 rounded-full blur-3xl opacity-50 -translate-y-10 translate-x-10 pointer-events-none"></div>
-            
-            <div className="p-8 text-center border-b border-emerald-800 relative z-10">
-              <div className="bg-white p-2 rounded-2xl w-24 h-24 mx-auto mb-4 flex items-center justify-center shadow-lg overflow-hidden border-2 border-emerald-100 transition-transform hover:scale-105">
-                {currentRole === 'admin' ? <Activity color="#064e3b" size={48} /> : testerInfo?.logo ? <img src={testerInfo.logo} alt="Logo" className="w-full h-full object-contain" /> : <FileSignature color="#064e3b" size={48} />}
-              </div>
-              <h1 className="font-bold text-xl leading-tight line-clamp-2 tracking-wide text-emerald-50">{currentRole === 'admin' ? 'Pusat Riset Bab 4' : (testerInfo?.lembaga || 'Portal Riset')}</h1>
-              <p className="text-emerald-400 text-xs mt-2 px-2 uppercase font-semibold tracking-widest">{currentRole === 'admin' ? 'Dashboard Peneliti' : 'SIAKAD Prototype'}</p>
-            </div>
-            
-            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto relative z-10 custom-scrollbar">
-              {currentRole === 'admin' && (
-                <SidebarItem icon={<LineChart />} label="Dashboard Statistik" active={activeTab === 'admin-dashboard'} onClick={() => setActiveTab('admin-dashboard')} />
-              )}
-              {currentRole === 'operator' && (
-                <React.Fragment>
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-4 px-3">Eksperimen Waktu</p>
-                  <SidebarItem icon={<Users />} label="Simulasi Entri Santri" active={activeTab === 'ocr-santri'} onClick={() => setActiveTab('ocr-santri')} />
-                  <SidebarItem icon={<UserCheck />} label="Simulasi Entri Ustadz" active={activeTab === 'ocr-ustadz'} onClick={() => setActiveTab('ocr-ustadz')} />
-                  <SidebarItem icon={<BarChart />} label="Laporan Metrik" active={activeTab === 'report'} onClick={() => setActiveTab('report')} />
-                  
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Evaluasi</p>
-                  <SidebarItem 
-                      icon={isKuisionerUnlocked ? <MessageSquare /> : <Lock />} 
-                      label="Kuisioner Kepuasan" 
-                      active={activeTab === 'kuisioner'} 
-                      onClick={() => {
-                          if (isKuisionerUnlocked) setActiveTab('kuisioner');
-                          else showToast("Selesaikan minimal 1x OCR Santri, 1x OCR Ustadz, dan 1x Manual untuk membuka kuisioner!", "error");
-                      }} 
-                  />
-
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Modul Administrasi</p>
-                  <SidebarItem icon={<FileText />} label="Pengajuan Surat" active={activeTab === 'request'} onClick={() => setActiveTab('request')} />
-                  <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Dokumen" active={activeTab === 'arsip'} onClick={() => setActiveTab('arsip')} />
-                </React.Fragment>
-              )}
-              {currentRole === 'kepala' && (
-                <React.Fragment>
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-4 px-3">Otoritas Pimpinan</p>
-                  <SidebarItem icon={<ShieldCheck />} label="Approval Pengajuan" active={activeTab === 'approval'} onClick={() => setActiveTab('approval')} />
-                  <SidebarItem icon={<FileCheck />} label="Arsip Dokumen Resmi" active={activeTab === 'arsip'} onClick={() => setActiveTab('arsip')} />
-                </React.Fragment>
-              )}
-            </nav>
-
-            <div className="p-5 bg-emerald-950/50 backdrop-blur-md relative z-10 border-t border-emerald-800/50">
-              <div className="flex items-center gap-3 mb-5 px-1">
-                <div className="bg-emerald-800 rounded-xl p-2 shadow-inner border border-emerald-700/50"><User size={20} className="text-emerald-300" /></div>
-                <div className="overflow-hidden">
-                  <p className="font-bold text-sm capitalize truncate text-emerald-50">{currentRole === 'admin' ? 'Peneliti Utama' : testerInfo?.nama}</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 truncate">Sesi Aktif ({currentRole})</p>
-                </div>
-              </div>
-              <button onClick={() => { setTesterInfo(null); setCurrentRole(null); setActiveTab('dashboard'); }} className="w-full flex items-center justify-center gap-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white py-2.5 rounded-xl transition-all duration-200 font-bold text-sm border border-red-500/20 shadow-sm hover:shadow-red-500/30">
-                <LogOut size={16} /> Ganti Sesi Akses
-              </button>
-            </div>
-          </aside>
-
-          <main className="flex-1 p-6 md:p-10 overflow-y-auto bg-[#F8FAFC] print:p-0 print:m-0 print:bg-white relative selection:bg-emerald-200">
-            {activeTab === 'admin-dashboard' && <AdminDashboardView localLogs={researchLogs} />}
-            
-            {activeTab === 'ocr-santri' && <ExperimentEntryView targetType="santri" targetData={santriData} setTargetData={setSantriData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
-            {activeTab === 'ocr-ustadz' && <ExperimentEntryView targetType="ustadz" targetData={ustadzData} setTargetData={setUstadzData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
-            {activeTab === 'report' && <ResearchReportView researchLogs={researchLogs} showToast={showToast} />}
-            {activeTab === 'kuisioner' && <KuisionerView showToast={showToast} />}
-            
-            {activeTab === 'request' && <RequestDocumentView ustadzData={ustadzData} dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
-            {activeTab === 'approval' && <ApprovalView dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
-            {activeTab === 'arsip' && <ArsipView dokumenReq={dokumenReq} testerInfo={testerInfo} />}
-            
-            {activeTab === 'dashboard' && (
-              <div className="flex flex-col items-center justify-center h-full text-center text-emerald-900/60 animate-fade-in max-w-2xl mx-auto">
-                <div className="bg-emerald-100/50 p-6 rounded-3xl mb-6 shadow-inner border border-emerald-50">
-                  {currentRole === 'admin' ? <LineChart size={64} className="text-emerald-600" /> : <BookOpen size={64} className="text-emerald-600" />}
-                </div>
-                <h2 className="text-3xl font-extrabold text-slate-800 mb-3">Selamat Datang di SIAKAD</h2>
-                <p className="text-slate-500 leading-relaxed">
-                  Prototipe ini dirancang untuk penelitian eksperimental fungsional perangkat lunak. Sistem menggunakan <b>Gemini AI</b> untuk mengekstrak data dari dokumen.
-                </p>
-                <div className="mt-8 flex flex-wrap justify-center gap-3">
-                    <span className="px-4 py-2 bg-white shadow-sm border rounded-full text-xs font-bold text-slate-600 flex items-center gap-2"><ShieldCheck size={14} className="text-emerald-500"/> Privasi Terjamin</span>
-                    <span className="px-4 py-2 bg-white shadow-sm border rounded-full text-xs font-bold text-slate-600 flex items-center gap-2"><Timer size={14} className="text-blue-500"/> Akurasi Waktu</span>
-                    <span className="px-4 py-2 bg-white shadow-sm border rounded-full text-xs font-bold text-slate-600 flex items-center gap-2"><Database size={14} className="text-purple-500"/> Gemini AI Powered</span>
-                </div>
-              </div>
-            )}
-          </main>
-
-          <ToastNotification toast={toast} setToast={setToast} />
-        </div>
-      );
-    }
+    const Upload = FAIcon('fa-upload'); const FileText = FAIcon('fa-file-lines'); const CheckCircle = FAIcon('fa-circle-check');
+    const User = FAIcon('fa-user'); const ShieldCheck = FAIcon('fa-shield-halved'); const Users = FAIcon('fa-users');
+    const FileSignature = FAIcon('fa-file-signature'); const AlertCircle = FAIcon('fa-circle-exclamation');
+    const Timer = FAIcon('fa-stopwatch'); const Download = FAIcon('fa-download'); const BarChart = FAIcon('fa-chart-column');
+    const Database = FAIcon('fa-database'); const RefreshCw = FAIcon('fa-arrows-rotate'); const UserCheck = FAIcon('fa-user-check');
+    const ClipboardList = FAIcon('fa-clipboard-list'); const BookOpen = FAIcon('fa-book-open'); const LineChart = FAIcon('fa-chart-line');
+    const Activity = FAIcon('fa-wave-square'); const X = FAIcon('fa-xmark'); const LogOut = FAIcon('fa-right-from-bracket');
+    const PlusCircle = FAIcon('fa-circle-plus'); const Clock = FAIcon('fa-clock'); const QrCode = FAIcon('fa-qrcode');
+    const FileSearch = FAIcon('fa-file-code'); const FileCheck = FAIcon('fa-file-circle-check'); const Search = FAIcon('fa-magnifying-glass');
+    const Lock = FAIcon('fa-lock'); const MessageSquare = FAIcon('fa-comments'); const MenuIcon = FAIcon('fa-bars'); const Key = FAIcon('fa-key'); const Server = FAIcon('fa-server');
 
     function ToastNotification({ toast, setToast }) {
       if (!toast.show) return null;
       return (
-        <div className={`fixed bottom-6 right-6 p-4 rounded-2xl shadow-2xl text-white font-bold z-50 flex items-center gap-4 animate-fade-in max-w-sm border-2 ${toast.type === 'error' ? 'bg-red-600 border-red-500 shadow-red-500/30' : toast.type === 'success' ? 'bg-emerald-600 border-emerald-500 shadow-emerald-500/30' : 'bg-blue-600 border-blue-500 shadow-blue-500/30'}`}>
-           <div className="bg-white/20 p-2 rounded-xl flex-shrink-0">
-              {toast.type === 'error' ? <AlertCircle size={20} /> : toast.type === 'success' ? <CheckCircle size={20} /> : <Activity size={20} />}
+        <div className={`fixed bottom-4 right-4 md:bottom-6 md:right-6 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-2xl text-white font-bold z-[100] flex items-center gap-3 md:gap-4 animate-fade-in w-[calc(100%-2rem)] md:max-w-sm border-2 ${toast.type === 'error' ? 'bg-red-600 border-red-500 shadow-red-500/30' : toast.type === 'success' ? 'bg-emerald-600 border-emerald-500 shadow-emerald-500/30' : 'bg-blue-600 border-blue-500 shadow-blue-500/30'}`}>
+           <div className="bg-white/20 p-1.5 md:p-2 rounded-lg md:rounded-xl flex-shrink-0">
+              {toast.type === 'error' ? <AlertCircle size={18} /> : toast.type === 'success' ? <CheckCircle size={18} /> : <Activity size={18} />}
            </div>
-           <p className="flex-1 text-sm leading-snug">{toast.message}</p>
-           <button onClick={() => setToast({ show: false, message: '', type: 'info' })} className="opacity-70 hover:opacity-100 flex-shrink-0 transition bg-black/10 hover:bg-black/20 p-1.5 rounded-lg"><X size={16}/></button>
+           <p className="flex-1 text-xs md:text-sm leading-snug">{toast.message}</p>
+           <button onClick={() => setToast({ show: false, message: '', type: 'info' })} className="opacity-70 hover:opacity-100 flex-shrink-0 transition bg-black/10 hover:bg-black/20 p-1 rounded-md"><X size={14}/></button>
         </div>
       );
     }
@@ -244,6 +75,7 @@
     function WelcomeTesterScreen({ setTesterInfo, setRole, showToast }) {
       const [nama, setNama] = useState('');
       const [lembaga, setLembaga] = useState('');
+      const [namaKepala, setNamaKepala] = useState(''); 
       const [alamat, setAlamat] = useState('');
       const [nomorIjop, setNomorIjop] = useState('');
       const [nomorStatistik, setNomorStatistik] = useState('');
@@ -261,63 +93,68 @@
 
       const handleSubmit = (e) => {
         e.preventDefault();
-        if(nama.trim() && lembaga.trim() && alamat.trim()) {
-          setTesterInfo({ nama, lembaga, alamat, nomorIjop, nomorStatistik, logo });
-        } else showToast("Nama, Lembaga, dan Alamat wajib diisi.", "error");
+        if(nama.trim() && lembaga.trim() && alamat.trim() && namaKepala.trim()) {
+          setTesterInfo({ nama, lembaga, namaKepala, alamat, nomorIjop, nomorStatistik, logo });
+        } else showToast("Nama Penguji, Lembaga, Kepala TPQ, dan Alamat wajib diisi.", "error");
       };
 
       return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] relative overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+        <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] relative overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-emerald-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-64 md:w-96 h-64 md:h-96 bg-blue-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
 
-          <div className="bg-white/95 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl w-full max-w-lg animate-fade-in relative z-10 border border-white/40">
-            <div className="text-center mb-8">
-              <div className="bg-emerald-100/80 w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-5 select-none cursor-default shadow-inner border border-emerald-200" onClick={() => { const n = secretClicks + 1; if (n >= 7) setRole('admin'); else setSecretClicks(n); }}>
-                <ClipboardList color="#059669" size={36} />
+          <div className="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] shadow-2xl w-full max-w-lg animate-fade-in relative z-10 border border-white/40 my-4">
+            <div className="text-center mb-6 md:mb-8">
+              {/* TOMBOL RAHASIA UNTUK MENUJU ADMIN: Klik 7x */}
+              <div className="bg-emerald-100/80 w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 select-none cursor-default shadow-inner border border-emerald-200" onClick={() => { const n = secretClicks + 1; if (n >= 7) setRole('admin'); else setSecretClicks(n); }}>
+                <ClipboardList color="#059669" size={32} />
               </div>
-              <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Setup Profil Lembaga</h1>
-              <p className="text-slate-500 text-sm mt-2 font-medium">Data ini digunakan untuk men-generate Kop Surat secara otomatis di akhir eksperimen.</p>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Setup Profil Lembaga</h1>
+              <p className="text-slate-500 text-xs md:text-sm mt-2 font-medium">Data ini digunakan untuk men-generate Kop Surat secara otomatis.</p>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+              <div className="space-y-3 md:space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Nama Lengkap Penguji <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Ahmad Subagyo" className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium" value={nama} onChange={(e) => setNama(e.target.value)} />
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Lengkap Penguji <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: Ahmad Subagyo" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 md:focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium text-sm md:text-base" value={nama} onChange={(e) => setNama(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Nama Lembaga <span className="text-slate-400 font-normal normal-case">(Tanpa kata TPQ/LPQ)</span> <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Miftahul Ulum" className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Lembaga <span className="text-slate-400 font-normal normal-case">(Tanpa TPQ/LPQ)</span> <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: Miftahul Ulum" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 md:focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium text-sm md:text-base" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Kepala TPQ <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: K.H. Zainudin" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 md:focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium text-sm md:text-base" value={namaKepala} onChange={(e) => setNamaKepala(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Nomor Ijop</label>
-                    <input type="text" placeholder="Opsional" className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium" value={nomorIjop} onChange={(e) => setNomorIjop(e.target.value)} />
+                    <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nomor Ijop</label>
+                    <input type="text" placeholder="Opsional" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={nomorIjop} onChange={(e) => setNomorIjop(e.target.value)} />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Nomor Statistik</label>
-                    <input type="text" placeholder="Opsional" className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium" value={nomorStatistik} onChange={(e) => setNomorStatistik(e.target.value)} />
+                    <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nomor Statistik</label>
+                    <input type="text" placeholder="Opsional" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={nomorStatistik} onChange={(e) => setNomorStatistik(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Alamat Sekretariat Lengkap <span className="text-red-500">*</span></label>
-                  <textarea required placeholder="Jalan, RT/RW, Desa, Kec, Kab..." className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium resize-none h-24" value={alamat} onChange={(e) => setAlamat(e.target.value)}></textarea>
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Alamat Sekretariat Lengkap <span className="text-red-500">*</span></label>
+                  <textarea required placeholder="Jalan, RT/RW, Desa, Kec, Kab..." className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium resize-none h-20 md:h-24 text-sm md:text-base" value={alamat} onChange={(e) => setAlamat(e.target.value)}></textarea>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Logo Lembaga <span className="text-slate-400 font-normal normal-case">(Opsional)</span></label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden">
-                      {logo ? <img src={logo} className="w-full h-full object-contain"/> : <Upload color="#94a3b8" size={24} />}
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1.5 md:mb-2 uppercase tracking-wider">Logo Lembaga <span className="text-slate-400 font-normal normal-case">(Opsional)</span></label>
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {logo ? <img src={logo} className="w-full h-full object-contain"/> : <Upload color="#94a3b8" size={20} />}
                     </div>
-                    <label className="flex-1 cursor-pointer bg-slate-50 border border-slate-200 hover:bg-slate-100 p-3 rounded-xl text-sm font-semibold text-slate-600 text-center transition">
+                    <label className="flex-1 cursor-pointer bg-slate-50 border border-slate-200 hover:bg-slate-100 p-3 rounded-xl text-xs md:text-sm font-semibold text-slate-600 text-center transition">
                       Pilih File Logo
                       <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                     </label>
                   </div>
                 </div>
               </div>
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-600/30 mt-8 transition-transform hover:-translate-y-1">
+              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 md:py-4 rounded-xl shadow-lg shadow-emerald-600/30 mt-6 md:mt-8 transition-transform hover:-translate-y-1 text-sm md:text-base">
                 Lanjutkan ke Sistem
               </button>
             </form>
@@ -328,35 +165,35 @@
 
     function LoginScreen({ setRole, testerInfo }) {
       return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+        <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-emerald-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
 
-          <div className="bg-white/95 backdrop-blur-xl p-10 rounded-[2rem] shadow-2xl w-full max-w-md text-center animate-fade-in relative z-10">
-            <div className="bg-emerald-100/80 w-28 h-28 mx-auto rounded-full flex items-center justify-center mb-6 shadow-inner overflow-hidden border-4 border-white">
-              {testerInfo.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain bg-white" /> : <ShieldCheck color="#059669" size={56} />}
+          <div className="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2rem] shadow-2xl w-full max-w-md text-center animate-fade-in relative z-10">
+            <div className="bg-emerald-100/80 w-24 h-24 md:w-28 md:h-28 mx-auto rounded-full flex items-center justify-center mb-4 md:mb-6 shadow-inner overflow-hidden border-4 border-white">
+              {testerInfo.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain bg-white" /> : <ShieldCheck color="#059669" size={48} />}
             </div>
-            <h1 className="text-2xl font-extrabold text-slate-800 mb-1">{testerInfo.lembaga}</h1>
-            <p className="text-emerald-600 text-sm font-bold mb-8 tracking-wide">Penguji: {testerInfo.nama}</p>
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-800 mb-1 px-2 leading-tight">{testerInfo.lembaga}</h1>
+            <p className="text-emerald-600 text-xs md:text-sm font-bold mb-6 md:mb-8 tracking-wide">Penguji: {testerInfo.nama}</p>
             
-            <div className="space-y-4">
-              <button onClick={() => setRole('operator')} className="w-full flex items-center p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all group">
-                <div className="bg-blue-50 p-4 rounded-xl group-hover:bg-blue-500 group-hover:scale-110 transition-all duration-300"><User className="text-blue-600 group-hover:text-white" size={28} /></div>
-                <div className="ml-5 text-left"><h3 className="font-extrabold text-slate-800 text-lg">Staf Operator</h3><p className="text-xs text-slate-500 font-medium">Uji Coba Entri Data OCR Gemini</p></div>
+            <div className="space-y-3 md:space-y-4">
+              <button onClick={() => setRole('operator')} className="w-full flex items-center p-3 md:p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 transition-all group">
+                <div className="bg-blue-50 p-3 md:p-4 rounded-xl group-hover:bg-blue-500 transition-all duration-300 flex-shrink-0"><User className="text-blue-600 group-hover:text-white" size={24} /></div>
+                <div className="ml-4 md:ml-5 text-left"><h3 className="font-extrabold text-slate-800 text-base md:text-lg">Staf Operator</h3><p className="text-[10px] md:text-xs text-slate-500 font-medium">Uji Coba Entri Data OCR Gemini</p></div>
               </button>
               
-              <button onClick={() => setRole('kepala')} className="w-full flex items-center p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/10 transition-all group">
-                <div className="bg-purple-50 p-4 rounded-xl group-hover:bg-purple-500 group-hover:scale-110 transition-all duration-300"><CheckCircle className="text-purple-600 group-hover:text-white" size={28} /></div>
-                <div className="ml-5 text-left"><h3 className="font-extrabold text-slate-800 text-lg">Pimpinan LPQ</h3><p className="text-xs text-slate-500 font-medium">Tanda Tangan & Persetujuan</p></div>
+              <button onClick={() => setRole('kepala')} className="w-full flex items-center p-3 md:p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-purple-500 transition-all group">
+                <div className="bg-purple-50 p-3 md:p-4 rounded-xl group-hover:bg-purple-500 transition-all duration-300 flex-shrink-0"><CheckCircle className="text-purple-600 group-hover:text-white" size={24} /></div>
+                <div className="ml-4 md:ml-5 text-left"><h3 className="font-extrabold text-slate-800 text-base md:text-lg">Pimpinan LPQ</h3><p className="text-[10px] md:text-xs text-slate-500 font-medium">Tanda Tangan & Persetujuan</p></div>
               </button>
 
-              <div className="relative py-4">
+              <div className="relative py-3 md:py-4">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
-                <div className="relative flex justify-center"><span className="bg-white px-4 text-[10px] text-slate-400 font-black tracking-widest">AKSES PUBLIK</span></div>
+                <div className="relative flex justify-center"><span className="bg-white px-4 text-[9px] md:text-[10px] text-slate-400 font-black tracking-widest">AKSES PUBLIK</span></div>
               </div>
 
-              <button onClick={() => setRole('public')} className="w-full flex items-center p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl hover:bg-slate-100 hover:border-slate-300 transition-all group">
-                <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-100"><QrCode className="text-slate-700" size={24} /></div>
-                <div className="ml-4 text-left"><h3 className="font-bold text-slate-700">Verifikasi Dokumen</h3><p className="text-xs text-slate-500">Scan QR Code Surat Valid</p></div>
+              <button onClick={() => setRole('public')} className="w-full flex items-center p-3 md:p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl hover:bg-slate-100 transition-all group">
+                <div className="bg-white p-2.5 md:p-3 rounded-xl shadow-sm border border-slate-100 flex-shrink-0"><QrCode className="text-slate-700" size={20} /></div>
+                <div className="ml-3 md:ml-4 text-left"><h3 className="font-bold text-slate-700 text-sm md:text-base">Verifikasi Dokumen</h3><p className="text-[10px] md:text-xs text-slate-500">Scan QR Code Surat Valid</p></div>
               </button>
             </div>
           </div>
@@ -364,14 +201,20 @@
       );
     }
 
-    function AdminDashboardView({ localLogs }) {
+    function AdminDashboardView({ localLogs, santriData, ustadzData, appConfig, setAppConfig, showToast }) {
       const [globalStats, setGlobalStats] = useState({ isLoading: true, totalPenguji: 0, totalEksperimen: 0, avgOcr: 0, avgImport: 0, avgManual: 0, isFallback: false });
+      const [viewDataTab, setViewDataTab] = useState('santri');
+
+      // State untuk Setup API Key (Rahasia)
+      const [apiInput, setApiInput] = useState(appConfig?.apiKey || '');
+      const [gasInput, setGasInput] = useState(appConfig?.gasUrl || '');
+      const [showKey, setShowKey] = useState(false);
 
       useEffect(() => {
         const fetchGlobalData = async () => {
           try {
-            if(!apiUrl || apiUrl.includes("GANTI_DENGAN_URL")) throw new Error();
-            const targetUrl = apiUrl.includes("script.google.com") ? `${apiUrl}?action=stats` : `${apiUrl}/stats`;
+            if(!appConfig.gasUrl || appConfig.gasUrl.trim() === "") throw new Error("GAS URL Kosong");
+            const targetUrl = appConfig.gasUrl.includes("script.google.com") ? `${appConfig.gasUrl}?action=stats` : `${appConfig.gasUrl}/stats`;
             const response = await fetch(targetUrl);
             if (!response.ok) throw new Error();
             const data = await response.json();
@@ -390,520 +233,211 @@
           }
         };
         fetchGlobalData();
-      }, [localLogs]);
+      }, [localLogs, appConfig.gasUrl]);
+
+      const handleSaveConfig = (e) => {
+        e.preventDefault();
+        if(!apiInput.trim()) return showToast("API Key wajib diisi untuk mengaktifkan AI.", "error");
+        
+        const newConfig = { apiKey: apiInput.trim(), gasUrl: gasInput.trim() };
+        localStorage.setItem('lpq_app_config', JSON.stringify(newConfig));
+        setAppConfig(newConfig);
+        showToast("Kredensial berhasil diamankan di browser ini.", "success");
+      };
 
       return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-6 md:space-y-8 animate-fade-in pb-10">
           <header className="mb-2">
-            <h2 className="text-3xl font-extrabold text-slate-800">Dashboard Riset Bab 4</h2>
-            <p className="text-slate-500 font-medium mt-2">Pemantauan data komparasi metrik kecepatan entri data.</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Dashboard Pusat Riset</h2>
+            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Area khusus untuk Peneliti. Penguji lain tidak memiliki akses ke halaman ini.</p>
           </header>
 
+          {/* PANEL RAHASIA: SETUP KREDENSIAL */}
+          <div className="bg-slate-900 rounded-2xl md:rounded-3xl shadow-xl border border-slate-800 overflow-hidden relative">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+             <div className="p-5 md:p-8 relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                   <div className="bg-emerald-500/20 p-2.5 rounded-xl border border-emerald-500/30"><ShieldCheck className="text-emerald-400" size={24} /></div>
+                   <div>
+                      <h3 className="font-extrabold text-white text-lg">Konfigurasi Kredensial Sistem</h3>
+                      <p className="text-emerald-400/80 text-xs font-medium mt-0.5">Setup lokal ini hanya terlihat di Dashboard Admin.</p>
+                   </div>
+                </div>
+
+                <form onSubmit={handleSaveConfig} className="space-y-4 md:space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div>
+                      <label className="block text-[10px] md:text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Gemini API Key (Wajib)</label>
+                      <div className="relative">
+                        <input type={showKey ? "text" : "password"} required placeholder="AIzaSy..." className="w-full bg-slate-800 border border-slate-700 text-white p-3.5 pr-12 rounded-xl focus:bg-slate-950 focus:border-emerald-500 outline-none transition font-mono text-sm" value={apiInput} onChange={(e) => setApiInput(e.target.value)} />
+                        <button type="button" onClick={() => setShowKey(!showKey)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white transition">
+                          <i className={`fa-solid ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] md:text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Google Apps Script URL (Opsional)</label>
+                      <input type="url" placeholder="https://script.google.com/..." className="w-full bg-slate-800 border border-slate-700 text-white p-3.5 rounded-xl focus:bg-slate-950 focus:border-emerald-500 outline-none transition font-mono text-sm" value={gasInput} onChange={(e) => setGasInput(e.target.value)} />
+                    </div>
+                  </div>
+                  <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition-all text-sm md:text-base flex items-center justify-center gap-2 w-full md:w-auto">
+                    <CheckCircle size={18}/> Simpan & Terapkan Konfigurasi
+                  </button>
+                </form>
+             </div>
+          </div>
+
           {globalStats.isFallback && (
-            <div className="bg-amber-50/50 border border-amber-200 p-5 rounded-2xl flex items-start gap-4">
-              <div className="bg-amber-100 p-2 rounded-full"><AlertCircle className="text-amber-600 flex-shrink-0" size={20} /></div>
+            <div className="bg-amber-50/50 border border-amber-200 p-4 md:p-5 rounded-xl md:rounded-2xl flex items-start gap-3 md:gap-4">
+              <div className="bg-amber-100 p-1.5 md:p-2 rounded-full"><AlertCircle className="text-amber-600 flex-shrink-0" size={18} /></div>
               <div>
-                <p className="font-bold text-amber-900 text-sm">Mode Pratinjau Lokal (Aplikasi Berjalan Mandiri)</p>
-                <p className="text-xs text-amber-700 mt-1 leading-relaxed">Belum terhubung ke backend Eksternal/GAS. Riwayat eksperimen sementara dicatat secara aman dalam memory browser lokal.</p>
+                <p className="font-bold text-amber-900 text-xs md:text-sm">Mode Pratinjau Lokal (Aplikasi Berjalan Mandiri)</p>
+                <p className="text-[10px] md:text-xs text-amber-700 mt-1 leading-relaxed">Belum terhubung ke backend Eksternal/GAS karena URL Apps Script tidak diisi atau tidak merespons. Riwayat eksperimen sementara dicatat secara aman dalam memory browser lokal.</p>
               </div>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden group hover:border-indigo-200 transition">
-              <div className="bg-indigo-50 w-12 h-12 absolute -top-4 -right-4 rounded-full group-hover:scale-[5] transition-transform duration-500 z-0"></div>
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Partisipan</p>
-                <div className="bg-indigo-100 p-2 rounded-lg"><Users color="#4f46e5" size={20}/></div>
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-5">
+            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden">
+              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
+                <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Partisipan</p>
+                <div className="bg-indigo-100 p-1.5 md:p-2 rounded-lg hidden md:block"><Users color="#4f46e5" size={16}/></div>
               </div>
-              <p className="text-4xl font-black text-slate-800 relative z-10">{globalStats.totalPenguji}</p>
+              <p className="text-2xl md:text-4xl font-black text-slate-800 relative z-10">{globalStats.totalPenguji}</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-200 flex flex-col relative overflow-hidden group hover:border-blue-200 transition">
-              <div className="bg-blue-50 w-12 h-12 absolute -top-4 -right-4 rounded-full group-hover:scale-[5] transition-transform duration-500 z-0"></div>
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Entri</p>
-                <div className="bg-blue-100 p-2 rounded-lg"><FileText color="#2563eb" size={20}/></div>
+            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-blue-200 flex flex-col relative overflow-hidden">
+              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
+                <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Total Entri</p>
+                <div className="bg-blue-100 p-1.5 md:p-2 rounded-lg hidden md:block"><FileText color="#2563eb" size={16}/></div>
               </div>
-              <p className="text-4xl font-black text-slate-800 relative z-10">{globalStats.totalEksperimen}</p>
+              <p className="text-2xl md:text-4xl font-black text-slate-800 relative z-10">{globalStats.totalEksperimen}</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col relative overflow-hidden group hover:border-emerald-300 transition">
-              <div className="bg-emerald-50 w-12 h-12 absolute -top-4 -right-4 rounded-full group-hover:scale-[5] transition-transform duration-500 z-0"></div>
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Avg. Gemini AI</p>
-                <div className="bg-emerald-100 p-2 rounded-lg"><Timer color="#059669" size={20}/></div>
+            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-emerald-100 flex flex-col relative overflow-hidden col-span-2 md:col-span-1">
+              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
+                <p className="text-[10px] md:text-xs font-bold text-emerald-600 uppercase tracking-widest">Avg. Gemini AI</p>
+                <div className="bg-emerald-100 p-1.5 md:p-2 rounded-lg hidden md:block"><Timer color="#059669" size={16}/></div>
               </div>
-              <p className="text-3xl font-black text-emerald-700 relative z-10">{globalStats.avgOcr}<span className="text-base ml-1 text-emerald-500 font-bold">s</span></p>
+              <p className="text-2xl md:text-3xl font-black text-emerald-700 relative z-10">{globalStats.avgOcr}<span className="text-sm md:text-base ml-1 text-emerald-500 font-bold">s</span></p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-teal-100 flex flex-col relative overflow-hidden group hover:border-teal-300 transition">
-              <div className="bg-teal-50 w-12 h-12 absolute -top-4 -right-4 rounded-full group-hover:scale-[5] transition-transform duration-500 z-0"></div>
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <p className="text-xs font-bold text-teal-600 uppercase tracking-widest">Avg. Excel</p>
-                <div className="bg-teal-100 p-2 rounded-lg"><Database color="#0f766e" size={20}/></div>
+            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-orange-100 flex flex-col relative overflow-hidden col-span-2 md:col-span-1">
+              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
+                <p className="text-[10px] md:text-xs font-bold text-orange-600 uppercase tracking-widest">Avg. Manual</p>
+                <div className="bg-orange-100 p-1.5 md:p-2 rounded-lg hidden md:block"><User color="#ea580c" size={16}/></div>
               </div>
-              <p className="text-3xl font-black text-teal-700 relative z-10">{globalStats.avgImport}<span className="text-base ml-1 text-teal-500 font-bold">s</span></p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100 flex flex-col relative overflow-hidden group hover:border-orange-300 transition">
-              <div className="bg-orange-50 w-12 h-12 absolute -top-4 -right-4 rounded-full group-hover:scale-[5] transition-transform duration-500 z-0"></div>
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <p className="text-xs font-bold text-orange-600 uppercase tracking-widest">Avg. Manual</p>
-                <div className="bg-orange-100 p-2 rounded-lg"><User color="#ea580c" size={20}/></div>
-              </div>
-              <p className="text-3xl font-black text-orange-700 relative z-10">{globalStats.avgManual}<span className="text-base ml-1 text-orange-500 font-bold">s</span></p>
+              <p className="text-2xl md:text-3xl font-black text-orange-700 relative z-10">{globalStats.avgManual}<span className="text-sm md:text-base ml-1 text-orange-500 font-bold">s</span></p>
             </div>
           </div>
           
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mt-8">
-             <div className="bg-slate-50/50 p-6 border-b border-slate-100 font-bold text-slate-800 flex items-center gap-3">
-                <div className="bg-white p-2 rounded shadow-sm border"><LineChart size={20} className="text-slate-600" /></div> 
+          <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 overflow-hidden mt-6 md:mt-8">
+             <div className="bg-slate-50/50 p-4 md:p-6 border-b border-slate-100 font-bold text-sm md:text-base text-slate-800 flex items-center gap-2 md:gap-3">
+                <div className="bg-white p-1.5 md:p-2 rounded shadow-sm border"><LineChart size={16} className="text-slate-600" /></div> 
                 Komparasi Kecepatan Eksekusi
              </div>
-             <div className="p-10 flex flex-col items-center justify-center min-h-[250px]">
+             <div className="p-5 md:p-10 flex flex-col items-center justify-center min-h-[200px] md:min-h-[250px]">
                 {globalStats.avgOcr > 0 || globalStats.avgManual > 0 || globalStats.avgImport > 0 ? (
-                   <div className="w-full max-w-3xl space-y-8">
+                   <div className="w-full max-w-3xl space-y-6 md:space-y-8">
                       {globalStats.avgOcr > 0 && (
                         <div>
-                           <div className="flex justify-between text-sm font-extrabold text-emerald-700 mb-3 uppercase tracking-wide"><span>Otomasi (OCR Gemini AI)</span><span>{globalStats.avgOcr} detik</span></div>
-                           <div className="w-full bg-slate-100 rounded-full h-6 p-1 shadow-inner"><div className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-4 rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgOcr / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
-                        </div>
-                      )}
-                      {globalStats.avgImport > 0 && (
-                        <div>
-                           <div className="flex justify-between text-sm font-extrabold text-teal-700 mb-3 uppercase tracking-wide"><span>Import Excel / CSV</span><span>{globalStats.avgImport} detik</span></div>
-                           <div className="w-full bg-slate-100 rounded-full h-6 p-1 shadow-inner"><div className="bg-gradient-to-r from-teal-400 to-teal-600 h-4 rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgImport / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
+                           <div className="flex justify-between text-xs md:text-sm font-extrabold text-emerald-700 mb-2 md:mb-3 uppercase tracking-wide"><span>Otomasi (OCR Gemini AI)</span><span>{globalStats.avgOcr} detik</span></div>
+                           <div className="w-full bg-slate-100 rounded-full h-4 md:h-6 p-0.5 md:p-1 shadow-inner"><div className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgOcr / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
                         </div>
                       )}
                       {globalStats.avgManual > 0 && (
                         <div>
-                           <div className="flex justify-between text-sm font-extrabold text-orange-700 mb-3 uppercase tracking-wide"><span>Ketik Konvensional (Manual)</span><span>{globalStats.avgManual} detik</span></div>
-                           <div className="w-full bg-slate-100 rounded-full h-6 p-1 shadow-inner"><div className="bg-gradient-to-r from-orange-400 to-orange-600 h-4 rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgManual / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
+                           <div className="flex justify-between text-xs md:text-sm font-extrabold text-orange-700 mb-2 md:mb-3 uppercase tracking-wide"><span>Ketik Konvensional (Manual)</span><span>{globalStats.avgManual} detik</span></div>
+                           <div className="w-full bg-slate-100 rounded-full h-4 md:h-6 p-0.5 md:p-1 shadow-inner"><div className="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgManual / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
                         </div>
                       )}
-                      <div className="mt-10 pt-6 border-t border-dashed border-slate-200 text-center text-sm font-bold text-slate-500 bg-slate-50 rounded-xl p-4">
-                         Dalam percobaan ini, Anda dapat membandingkan efisiensi fungsional perangkat lunak antara metode <b>Otomatis</b>, <b>Import Massal</b>, dan <b>Ketik Manual</b>.
+                      <div className="mt-6 md:mt-10 pt-4 md:pt-6 border-t border-dashed border-slate-200 text-center text-xs md:text-sm font-bold text-slate-500 bg-slate-50 rounded-xl p-3 md:p-4">
+                         Bandingkan efisiensi fungsional antara metode <b>Otomatis AI</b> dan <b>Ketik Manual</b>.
                       </div>
                    </div>
                 ) : (
-                   <div className="text-center text-slate-400">
-                     <FileSearch size={48} className="mx-auto mb-4 opacity-50" />
-                     <p className="font-semibold">Belum ada data komparasi.</p>
-                     <p className="text-sm mt-1">Lakukan entri data dengan OCR dan Manual minimal 1 kali.</p>
+                   <div className="text-center text-slate-400 p-4">
+                     <FileSearch size={36} className="mx-auto mb-3 md:mb-4 opacity-50" />
+                     <p className="font-semibold text-sm md:text-base">Belum ada data komparasi.</p>
+                     <p className="text-xs md:text-sm mt-1">Lakukan entri data minimal 1 kali.</p>
                    </div>
                 )}
              </div>
           </div>
-        </div>
-      );
-    }
 
-    function ResearchReportView({ researchLogs, showToast }) {
-      const handleDownload = () => {
-        if(researchLogs.length === 0) return showToast("Belum ada data untuk diunduh.", "error");
-        
-        try {
-            const ws = XLSX.utils.json_to_sheet(researchLogs);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Log_Eksperimen");
-            XLSX.writeFile(wb, `Laporan_Metrik_${new Date().getTime()}.xlsx`);
-            showToast("Laporan berhasil diunduh!", "success");
-        } catch (error) {
-            showToast("Gagal mengunduh file Excel.", "error");
-        }
-      };
-
-      return (
-        <div className="animate-fade-in max-w-5xl mx-auto space-y-6">
-          <header className="mb-6 border-b border-slate-200 pb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-            <div>
-              <h2 className="text-3xl font-extrabold text-slate-800 flex items-center gap-3">
-                <div className="bg-blue-100 p-2 rounded-xl text-blue-600"><BarChart size={28}/></div>
-                Laporan Metrik Sesi
-              </h2>
-              <p className="text-slate-500 font-medium mt-2">Riwayat waktu entri data yang telah Anda lakukan pada sesi pengujian ini.</p>
-            </div>
-            <button onClick={handleDownload} disabled={researchLogs.length === 0} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md flex items-center justify-center gap-2 transition disabled:opacity-50">
-              <Download size={16}/> Unduh Excel
-            </button>
-          </header>
-
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-600">
-                <thead className="bg-slate-50 border-b border-slate-100 uppercase text-[10px] font-extrabold tracking-widest text-slate-400">
-                  <tr>
-                    <th className="p-5">ID Log</th>
-                    <th className="p-5">Target Data</th>
-                    <th className="p-5">Metode Entri</th>
-                    <th className="p-5">Waktu Tempuh</th>
-                    <th className="p-5">Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {researchLogs.map(log => (
-                    <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
-                      <td className="p-5 font-mono font-bold text-slate-700">{log.id}</td>
-                      <td className="p-5 font-bold text-slate-800">{log.target}</td>
-                      <td className="p-5">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${log.method.includes('OCR') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
-                          {log.method}
-                        </span>
-                      </td>
-                      <td className="p-5 font-black text-slate-800 text-lg">{log.duration} <span className="text-xs text-slate-400 font-medium">detik</span></td>
-                      <td className="p-5 text-slate-500 font-medium">{log.timestamp}</td>
-                    </tr>
-                  ))}
-                  {researchLogs.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="text-center p-16">
-                        <Timer size={48} className="mx-auto text-slate-300 mb-4"/>
-                        <p className="text-slate-400 font-medium text-lg">Belum ada eksperimen yang dicatat.</p>
-                        <p className="text-slate-400 text-sm mt-1">Lakukan simulasi entri data terlebih dahulu.</p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function KuisionerView({ showToast }) {
-      const [submitted, setSubmitted] = useState(false);
-
-      const handleSubmit = (e) => {
-          e.preventDefault();
-          setSubmitted(true);
-          showToast("Terima kasih, kuisioner evaluasi telah disimpan!", "success");
-      };
-
-      if (submitted) {
-          return (
-              <div className="bg-white p-12 rounded-[2rem] shadow-sm border border-slate-100 text-center animate-fade-in max-w-2xl mx-auto mt-10">
-                  <div className="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle size={48} />
-                  </div>
-                  <h2 className="text-3xl font-black text-slate-800 mb-3">Evaluasi Selesai</h2>
-                  <p className="text-slate-500 text-lg leading-relaxed">
-                      Terima kasih atas penilaian Anda. Feedback ini akan digunakan untuk melengkapi data eksperimen kami.
-                  </p>
-              </div>
-          );
-      }
-
-      return (
-          <div className="max-w-3xl mx-auto animate-fade-in pb-10">
-              <header className="mb-8 border-b border-slate-200 pb-6">
-                  <h2 className="text-3xl font-extrabold text-slate-800 flex items-center gap-3">
-                      <div className="bg-purple-100 text-purple-600 p-2 rounded-xl"><MessageSquare size={28}/></div> 
-                      Kuisioner Evaluasi Sistem
-                  </h2>
-                  <p className="text-slate-500 mt-3 font-medium text-lg leading-relaxed">
-                      Anda telah mencoba seluruh tahapan OCR Gemini AI dan Entri Manual. Silakan berikan penilaian subjektif Anda sebagai penguji.
-                  </p>
-              </header>
-
-              <form onSubmit={handleSubmit} className="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-slate-200 space-y-8">
-                  <div className="space-y-4">
-                      <label className="font-extrabold text-lg text-slate-800 block">1. Bagaimana tingkat <span className="text-emerald-600">kecepatan</span> ekstraksi fungsional menggunakan OCR Gemini AI jika dibandingkan dengan mengetik manual?</label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['Sangat Jauh Lebih Cepat', 'Sedikit Lebih Cepat', 'Sama Saja', 'Lebih Lambat'].map(opt => (
-                              <label key={opt} className="flex items-center gap-3 p-4 border-2 border-slate-100 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer transition">
-                                  <input type="radio" name="q1" required className="w-5 h-5 text-emerald-600 accent-emerald-600" value={opt} /> 
-                                  <span className="font-semibold text-slate-700">{opt}</span>
-                              </label>
-                          ))}
-                      </div>
-                  </div>
-
-                  <div className="space-y-4">
-                      <label className="font-extrabold text-lg text-slate-800 block">2. Bagaimana tingkat <span className="text-blue-600">akurasi</span> teks hasil tangkapan dari citra dokumen menggunakan Gemini AI?</label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['Sangat Akurat (Tanpa Salah Cetak)', 'Cukup Akurat (Perlu Sedikit Koreksi)', 'Kurang Akurat (Banyak Typo)', 'Sangat Buruk'].map(opt => (
-                              <label key={opt} className="flex items-center gap-3 p-4 border-2 border-slate-100 rounded-xl hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition">
-                                  <input type="radio" name="q2" required className="w-5 h-5 accent-blue-600" value={opt} /> 
-                                  <span className="font-semibold text-slate-700">{opt}</span>
-                              </label>
-                          ))}
-                      </div>
-                  </div>
-
-                  <div className="space-y-4">
-                      <label className="font-extrabold text-lg text-slate-800 block">3. Secara keseluruhan, apakah Anda merasa sistem ini <span className="text-purple-600">membantu</span> pekerjaan administrasi?</label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['Sangat Membantu', 'Cukup Membantu', 'Biasa Saja', 'Tidak Membantu/Menyulitkan'].map(opt => (
-                              <label key={opt} className="flex items-center gap-3 p-4 border-2 border-slate-100 rounded-xl hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition">
-                                  <input type="radio" name="q3" required className="w-5 h-5 accent-purple-600" value={opt} /> 
-                                  <span className="font-semibold text-slate-700">{opt}</span>
-                              </label>
-                          ))}
-                      </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                      <label className="font-extrabold text-lg text-slate-800 block">Kritik & Saran Tambahan (Opsional)</label>
-                      <textarea className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition resize-none h-24" placeholder="Ketik jawaban Anda di sini..."></textarea>
-                  </div>
-
-                  <button type="submit" className="w-full bg-slate-800 text-white py-5 rounded-2xl font-bold hover:bg-slate-900 transition text-lg shadow-lg shadow-slate-900/20">
-                      Kirim & Simpan Penilaian
-                  </button>
-              </form>
-          </div>
-      );
-    }
-
-    function AddressCascader({ formData, setFormData, prefix = '' }) {
-        const getField = (field) => prefix ? `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}` : field;
-
-        const [provinces, setProvinces] = useState([]);
-        const [regencies, setRegencies] = useState([]);
-        const [districts, setDistricts] = useState([]);
-        const [villages, setVillages] = useState([]);
-
-        useEffect(() => {
-            fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
-                .then(res => res.json())
-                .then(setProvinces).catch(console.error);
-        }, []);
-
-        const handleChange = (e, level) => {
-            const name = e.target.value;
-            const id = e.target.selectedOptions?.[0]?.dataset?.id;
-            
-            if (level === 'provinsi') {
-                setFormData(prev => ({ ...prev, [getField('provinsi')]: name, [getField('kabupaten')]: '', [getField('kecamatan')]: '', [getField('desa')]: '' }));
-                if (id) fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${id}.json`).then(r => r.json()).then(setRegencies);
-                else setRegencies([]);
-                setDistricts([]); setVillages([]);
-            } else if (level === 'kabupaten') {
-                setFormData(prev => ({ ...prev, [getField('kabupaten')]: name, [getField('kecamatan')]: '', [getField('desa')]: '' }));
-                if (id) fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${id}.json`).then(r => r.json()).then(setDistricts);
-                else setDistricts([]);
-                setVillages([]);
-            } else if (level === 'kecamatan') {
-                setFormData(prev => ({ ...prev, [getField('kecamatan')]: name, [getField('desa')]: '' }));
-                if (id) fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${id}.json`).then(r => r.json()).then(setVillages);
-                else setVillages([]);
-            } else if (level === 'desa') {
-                setFormData(prev => ({ ...prev, [getField('desa')]: name }));
-            } else {
-                setFormData(prev => ({ ...prev, [getField(level)]: name }));
-            }
-        };
-
-        return (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <select value={formData[getField('provinsi')] || ''} onChange={(e) => handleChange(e, 'provinsi')} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs">
-                    <option value="">-- Pilih Provinsi --</option>
-                    {provinces.map(p => <option key={p.id} data-id={p.id} value={p.name}>{p.name}</option>)}
-                </select>
-                <select value={formData[getField('kabupaten')] || ''} onChange={(e) => handleChange(e, 'kabupaten')} disabled={!regencies.length} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs disabled:opacity-50">
-                    <option value="">-- Pilih Kab/Kota --</option>
-                    {regencies.map(r => <option key={r.id} data-id={r.id} value={r.name}>{r.name}</option>)}
-                </select>
-                <select value={formData[getField('kecamatan')] || ''} onChange={(e) => handleChange(e, 'kecamatan')} disabled={!districts.length} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs disabled:opacity-50">
-                    <option value="">-- Pilih Kecamatan --</option>
-                    {districts.map(d => <option key={d.id} data-id={d.id} value={d.name}>{d.name}</option>)}
-                </select>
-                <select value={formData[getField('desa')] || ''} onChange={(e) => handleChange(e, 'desa')} disabled={!villages.length} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs disabled:opacity-50">
-                    <option value="">-- Pilih Desa --</option>
-                    {villages.map(v => <option key={v.id} data-id={v.id} value={v.name}>{v.name}</option>)}
-                </select>
-                <div className="col-span-2 md:col-span-1 flex gap-2">
-                  <input type="text" placeholder="RT" value={formData[getField('rt')] || ''} onChange={(e) => handleChange(e, 'rt')} className="w-1/2 bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs" />
-                  <input type="text" placeholder="RW" value={formData[getField('rw')] || ''} onChange={(e) => handleChange(e, 'rw')} className="w-1/2 bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs" />
+          <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 overflow-hidden mt-6 md:mt-8">
+             <div className="bg-slate-50/50 p-4 md:p-6 border-b border-slate-100 font-bold text-sm md:text-base text-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <div className="bg-white p-1.5 md:p-2 rounded shadow-sm border"><Database size={16} className="text-slate-600" /></div> 
+                    Database Input Operator (Lokal)
                 </div>
-                <input type="text" placeholder="Jalan / Gang / Dusun (Detail)" value={formData[getField('alamatLengkap')] || ''} onChange={(e) => handleChange(e, 'alamatLengkap')} className="col-span-2 md:col-span-2 w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs" />
-                <input type="text" placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={(e) => handleChange(e, 'kodePos')} className="col-span-2 md:col-span-1 w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs" />
-            </div>
-        );
-    }
-
-    function FormVerifikasi({ entryMethod, isSantri, formData, setFormData, handleSave, isProcessing }) {
-      const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-      
-      const renderDateInput = (name, label) => (
-        <div>
-           <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label}</label>
-           <input type={entryMethod === 'manual' ? "date" : "text"} placeholder={entryMethod === 'manual' ? "" : "Sesuai Dokumen"} name={name} value={formData[name] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 rounded-xl focus:border-emerald-500 outline-none text-sm font-medium" />
-        </div>
-      );
-
-      const renderInput = (name, label, placeholder = "") => (
-        <div>
-           <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label}</label>
-           <input type="text" name={name} placeholder={placeholder} value={formData[name] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 rounded-xl focus:border-emerald-500 outline-none text-sm font-medium" />
-        </div>
-      );
-
-      const renderSelect = (name, label, options) => (
-        <div>
-           <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label}</label>
-           <select name={name} value={formData[name] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 rounded-xl focus:border-emerald-500 outline-none text-sm font-medium">
-              <option value="">-- Pilih --</option>
-              {options.map(o => <option key={o} value={o}>{o}</option>)}
-           </select>
-        </div>
-      );
-
-      const renderAddressOCR = (prefix = '') => {
-        const getField = (field) => prefix ? `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}` : field;
-        return (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <input name={getField('provinsi')} placeholder="Provinsi" value={formData[getField('provinsi')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
-                <input name={getField('kabupaten')} placeholder="Kabupaten" value={formData[getField('kabupaten')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
-                <input name={getField('kecamatan')} placeholder="Kecamatan" value={formData[getField('kecamatan')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
-                <input name={getField('desa')} placeholder="Desa/Kelurahan" value={formData[getField('desa')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
-                <div className="col-span-2 md:col-span-1 flex gap-2">
-                    <input name={getField('rt')} placeholder="RT" value={formData[getField('rt')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
-                    <input name={getField('rw')} placeholder="RW" value={formData[getField('rw')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
+                <div className="flex bg-slate-200 p-1 rounded-lg w-full md:w-auto">
+                   <button onClick={() => setViewDataTab('santri')} className={`flex-1 md:flex-none px-4 py-2 md:py-1.5 text-xs font-bold rounded-md transition-all ${viewDataTab === 'santri' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500'}`}>Data Santri ({santriData.length})</button>
+                   <button onClick={() => setViewDataTab('ustadz')} className={`flex-1 md:flex-none px-4 py-2 md:py-1.5 text-xs font-bold rounded-md transition-all ${viewDataTab === 'ustadz' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500'}`}>Data Ustadz ({ustadzData.length})</button>
                 </div>
-                <input name={getField('alamatLengkap')} placeholder="Jalan / Dusun (Detail Lengkap)" value={formData[getField('alamatLengkap')] || ''} onChange={handleChange} className="col-span-2 md:col-span-2 w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
-                <input name={getField('kodePos')} placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={handleChange} className="col-span-2 md:col-span-1 w-full bg-white border border-slate-300 p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium" />
-            </div>
-        );
-      };
-
-      return (
-        <form onSubmit={handleSave} className="space-y-6 animate-fade-in">
-          {formData.statusValidasi && (
-            <div className="bg-amber-50 p-4 border border-amber-200 text-amber-900 rounded-xl text-sm flex items-start gap-3 shadow-inner">
-               <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" /> 
-               <div>
-                  <b className="block mb-0.5">Validasi Diperlukan</b>
-                  {formData.statusValidasi}
-               </div>
-            </div>
-          )}
-          
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
-             <h4 className="font-extrabold text-slate-700 mb-5 flex items-center gap-2"><User size={18}/> Data {isSantri ? 'Santri' : 'Ustadz'}</h4>
+             </div>
              
-             {isSantri ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {renderInput('noKk', 'Nomor Kartu Keluarga (KK)', '16 Digit Angka')}
-                    {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit Angka')}
-                    {renderInput('nama', 'Nama Lengkap')}
-                    {renderInput('tempatLahir', 'Tempat Lahir')}
-                    {renderDateInput('tglLahir', 'Tanggal Lahir')}
-                    {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'])}
-                    {renderInput('agama', 'Agama (Sesuai KK)')}
-                 </div>
-             ) : (
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {renderInput('gelarDepan', 'Gelar Depan')}
-                    {renderInput('nama', 'Nama Lengkap (Tanpa Gelar)')}
-                    {renderInput('gelarBelakang', 'Gelar Belakang')}
-                    
-                    <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 border-slate-200">
-                        {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit Angka')}
-                        {renderInput('tempatLahir', 'Tempat Lahir')}
-                        {renderDateInput('tglLahir', 'Tanggal Lahir')}
-                        {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'])}
-                        {renderInput('agama', 'Agama (Sesuai KTP)')}
-                        {renderInput('golonganDarah', 'Golongan Darah')}
-                        {renderInput('statusPernikahan', 'Status Pernikahan (Sesuai KTP)')}
-                        {renderInput('pekerjaan', 'Pekerjaan (Sesuai KTP)')}
-                    </div>
-                 </div>
-             )}
+             <div className="overflow-x-auto w-full max-h-[400px] custom-scrollbar">
+               <table className="w-full text-left text-xs text-slate-600 whitespace-nowrap">
+                 <thead className="bg-white border-b border-slate-100 uppercase text-[10px] font-extrabold tracking-widest text-slate-400 sticky top-0 z-10 shadow-sm">
+                   {viewDataTab === 'santri' ? (
+                     <tr>
+                       <th className="p-3 md:p-4">ID / NIK</th>
+                       <th className="p-3 md:p-4">Nama Lengkap</th>
+                       <th className="p-3 md:p-4">L/P</th>
+                       <th className="p-3 md:p-4">Tempat, Tgl Lahir</th>
+                       <th className="p-3 md:p-4">Alamat Domisili</th>
+                       <th className="p-3 md:p-4">Nama Ayah</th>
+                       <th className="p-3 md:p-4">Nama Ibu</th>
+                     </tr>
+                   ) : (
+                     <tr>
+                       <th className="p-3 md:p-4">ID / NIK</th>
+                       <th className="p-3 md:p-4">Nama Lengkap & Gelar</th>
+                       <th className="p-3 md:p-4">L/P</th>
+                       <th className="p-3 md:p-4">Tempat, Tgl Lahir</th>
+                       <th className="p-3 md:p-4">Alamat Domisili</th>
+                       <th className="p-3 md:p-4">Pekerjaan</th>
+                       <th className="p-3 md:p-4">Status Pernikahan</th>
+                     </tr>
+                   )}
+                 </thead>
+                 <tbody>
+                   {viewDataTab === 'santri' && santriData.length === 0 && <tr><td colSpan="7" className="text-center p-8 text-slate-400"><Database size={24} className="mx-auto mb-2 opacity-30"/>Belum ada entri data Santri.</td></tr>}
+                   {viewDataTab === 'santri' && santriData.map(d => (
+                     <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
+                       <td className="p-3 md:p-4"><p className="font-bold text-slate-700">{d.nik}</p><p className="text-[10px] text-emerald-600 font-mono font-bold mt-0.5">{d.id}</p></td>
+                       <td className="p-3 md:p-4 font-bold text-slate-800">{d.nama}</td>
+                       <td className="p-3 md:p-4 font-bold">{d.jenisKelamin === 'Laki-laki' ? 'L' : d.jenisKelamin === 'Perempuan' ? 'P' : '-'}</td>
+                       <td className="p-3 md:p-4">{d.tempatLahir}, {d.tglLahir}</td>
+                       <td className="p-3 md:p-4 truncate max-w-[200px]" title={d.alamat}>{d.alamat || '-'}</td>
+                       <td className="p-3 md:p-4 font-medium">{d.ayahNama || '-'}</td>
+                       <td className="p-3 md:p-4 font-medium">{d.ibuNama || '-'}</td>
+                     </tr>
+                   ))}
 
-             <div className="mt-6 md:col-span-2">
-                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wide">Alamat & Detail Geografis</label>
-                 {entryMethod === 'manual' ? <AddressCascader formData={formData} setFormData={setFormData} /> : renderAddressOCR()}
-                 
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-                     {renderInput('jarak', 'Jarak Rumah ke LPQ (KM)', 'Contoh: 2.5')}
-                     {renderSelect('transportasi', 'Fasilitas Transportasi', ['Jalan Kaki', 'Sepeda', 'Diantar Motor', 'Kendaraan Pribadi', 'Angkutan Umum', 'Lainnya'])}
-                     {renderInput('waktuTempuh', 'Waktu Tempuh (Menit)', 'Contoh: 15')}
-                 </div>
+                   {viewDataTab === 'ustadz' && ustadzData.length === 0 && <tr><td colSpan="7" className="text-center p-8 text-slate-400"><Database size={24} className="mx-auto mb-2 opacity-30"/>Belum ada entri data Ustadz.</td></tr>}
+                   {viewDataTab === 'ustadz' && ustadzData.map(d => (
+                     <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
+                       <td className="p-3 md:p-4"><p className="font-bold text-slate-700">{d.nik}</p><p className="text-[10px] text-blue-600 font-mono font-bold mt-0.5">{d.id}</p></td>
+                       <td className="p-3 md:p-4 font-bold text-slate-800">{d.nama}</td>
+                       <td className="p-3 md:p-4 font-bold">{d.jenisKelamin === 'Laki-laki' ? 'L' : d.jenisKelamin === 'Perempuan' ? 'P' : '-'}</td>
+                       <td className="p-3 md:p-4">{d.tempatLahir}, {d.tglLahir}</td>
+                       <td className="p-3 md:p-4 truncate max-w-[200px]" title={d.alamat}>{d.alamat || '-'}</td>
+                       <td className="p-3 md:p-4 font-medium">{d.pekerjaan || '-'}</td>
+                       <td className="p-3 md:p-4">{d.statusPernikahan || '-'}</td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
              </div>
           </div>
-
-          {isSantri && (
-              <div className="space-y-6">
-                  <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 shadow-sm">
-                     <div className="flex justify-between items-center mb-5">
-                         <h4 className="font-extrabold text-blue-800 flex items-center gap-2"><UserCheck size={18}/> Data Ayah</h4>
-                         <select name="statusAyah" value={formData.statusAyah || 'Hidup'} onChange={handleChange} className="text-xs font-bold border-2 border-blue-200 rounded p-1.5 outline-none bg-white text-blue-800">
-                             <option value="Hidup">Hidup (Sesuai KK)</option><option value="Meninggal">Meninggal / Tidak Diketahui</option>
-                         </select>
-                     </div>
-                     {formData.statusAyah === 'Hidup' ? (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {renderInput('ayahNik', 'NIK Ayah')}
-                            {renderInput('ayahNama', 'Nama Ayah')}
-                            {renderInput('ayahTempatLahir', 'Tempat Lahir Ayah')}
-                            {renderDateInput('ayahTglLahir', 'Tanggal Lahir Ayah')}
-                            {renderInput('ayahPekerjaan', 'Pekerjaan Ayah')}
-                            {renderInput('ayahEstimasiGaji', 'Estimasi Gaji/Pendapatan', 'Rp. ')}
-                         </div>
-                     ) : (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {renderInput('ayahNama', 'Nama Ayah (Almarhum / Sesuai Dokumen)')}
-                         </div>
-                     )}
-                  </div>
-
-                  <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100 shadow-sm">
-                     <div className="flex justify-between items-center mb-5">
-                         <h4 className="font-extrabold text-pink-800 flex items-center gap-2"><UserCheck size={18}/> Data Ibu</h4>
-                         <select name="statusIbu" value={formData.statusIbu || 'Hidup'} onChange={handleChange} className="text-xs font-bold border-2 border-pink-200 rounded p-1.5 outline-none bg-white text-pink-800">
-                             <option value="Hidup">Hidup (Sesuai KK)</option><option value="Meninggal">Meninggal / Tidak Diketahui</option>
-                         </select>
-                     </div>
-                     {formData.statusIbu === 'Hidup' ? (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {renderInput('ibuNik', 'NIK Ibu')}
-                            {renderInput('ibuNama', 'Nama Ibu')}
-                            {renderInput('ibuTempatLahir', 'Tempat Lahir Ibu')}
-                            {renderDateInput('ibuTglLahir', 'Tanggal Lahir Ibu')}
-                            {renderInput('ibuPekerjaan', 'Pekerjaan Ibu')}
-                            {renderInput('ibuEstimasiGaji', 'Estimasi Gaji/Pendapatan', 'Rp. ')}
-                         </div>
-                     ) : (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {renderInput('ibuNama', 'Nama Ibu (Almarhumah / Sesuai Dokumen)')}
-                         </div>
-                     )}
-                  </div>
-
-                  {formData.statusAyah === 'Meninggal' && formData.statusIbu === 'Meninggal' && (
-                      <div className="bg-amber-50 p-6 rounded-2xl border border-amber-200 shadow-sm">
-                         <h4 className="font-extrabold text-amber-900 mb-5 flex items-center gap-2"><UserCheck size={18}/> Data Wali (Wajib Jika Orang Tua Tidak Ada)</h4>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {renderInput('waliNama', 'Nama Wali')}
-                            {renderInput('waliHubungan', 'Hubungan dengan Santri', 'Contoh: Kakek, Paman, dll')}
-                         </div>
-                      </div>
-                  )}
-              </div>
-          )}
-
-          {!isSantri && (
-              <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100 shadow-sm">
-                 <h4 className="font-extrabold text-pink-800 mb-5 flex items-center gap-2"><UserCheck size={18}/> Informasi Keluarga (Ibu Kandung)</h4>
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {renderInput('ibuNama', 'Nama Ibu')}
-                    {renderInput('ibuStatusPernikahan', 'Status Pernikahan Ibu', 'Contoh: Cerai Mati')}
-                    {renderInput('ibuNoKk', 'Nomor KK Ibu')}
-                 </div>
-              </div>
-          )}
-          
-          <button type="submit" disabled={isProcessing} className="w-full bg-emerald-700 text-white py-4 rounded-xl font-bold mt-8 shadow-lg shadow-emerald-700/30 hover:bg-emerald-800 hover:-translate-y-1 transition-all disabled:opacity-70 flex justify-center items-center gap-2">
-            {isProcessing ? <RefreshCw className="animate-spin" size={20}/> : <CheckCircle size={20} />} Selesaikan Sesi & Simpan Metrik
-          </button>
-        </form>
+        </div>
       );
     }
 
-    function ExperimentEntryView({ targetType, targetData, setTargetData, researchLogs, setResearchLogs, testerInfo, showToast }) {
+    function ExperimentEntryView({ targetType, targetData, setTargetData, researchLogs, setResearchLogs, testerInfo, showToast, appConfig }) {
       const isSantri = targetType === 'santri';
       const targetLabel = isSantri ? 'Santri' : 'Ustadz';
       
@@ -975,13 +509,46 @@
           setOcrStep('UPLOAD_KK');
       };
 
-      const fetchWithRetry = async (url, options, retries = 5) => {
-        const delays = [1000, 2000, 4000, 8000, 16000];
+      const processImageForOCR = async (file) => {
+          return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                  const img = new Image();
+                  img.onload = () => {
+                      const canvas = document.createElement('canvas');
+                      const MAX_DIM = 1024; 
+                      let w = img.width; let h = img.height;
+                      
+                      if (w > MAX_DIM || h > MAX_DIM) {
+                          if (w > h) { h = (h/w)*MAX_DIM; w = MAX_DIM; }
+                          else { w = (w/h)*MAX_DIM; h = MAX_DIM; }
+                      }
+                      
+                      canvas.width = w; canvas.height = h;
+                      const ctx = canvas.getContext('2d');
+                      ctx.drawImage(img, 0, 0, w, h);
+                      
+                      const base64Str = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                      resolve({ mimeType: 'image/jpeg', data: base64Str });
+                  };
+                  img.onerror = () => reject(new Error("Gagal memuat gambar"));
+                  img.src = e.target.result;
+              };
+              reader.onerror = () => reject(new Error("Gagal membaca file"));
+              reader.readAsDataURL(file);
+          });
+      };
+
+      const fetchWithRetry = async (url, options, retries = 3) => {
+        const delays = [1000, 2000, 4000];
         for (let i = 0; i < retries; i++) {
             try {
                 const response = await fetch(url, options);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return await response.json();
+                const json = await response.json();
+                if (!response.ok) {
+                    throw new Error(json.error?.message || `HTTP ${response.status}`);
+                }
+                return json;
             } catch (e) {
                 if (i === retries - 1) throw e;
                 await new Promise(res => setTimeout(res, delays[i]));
@@ -989,163 +556,117 @@
         }
       };
 
+      const checkApiReady = () => {
+        if (!appConfig?.apiKey) {
+            showToast("API Key belum dikonfigurasi. Peneliti harus masuk ke Menu Admin untuk mengatur kunci API.", "error");
+            return false;
+        }
+        return true;
+      };
+
       const runGeminiOCRSantriKK = async () => {
+        if (!checkApiReady()) return;
         if (!rawFile) return showToast("Pilih gambar KK terlebih dahulu!", "error");
-        setIsExtracting(true); setOcrStatus('Menganalisis Pola KK via Gemini...');
+        setIsExtracting(true); setOcrStatus('Menganalisis KK via Gemini...');
         
         try {
-          const reader = new FileReader();
-          reader.readAsDataURL(rawFile);
-          reader.onloadend = async () => {
-              const base64Data = reader.result.split(',')[1];
-              const payload = {
-                  contents: [{
-                      role: "user",
-                      parts: [
-                          { text: `Ekstrak informasi dari dokumen Kartu Keluarga ini. Cari anak dengan NIK: ${formData.nik} dan ekstrak datanya: nama, jenisKelamin, agama, tempatLahir, tglLahir. Kemudian ekstrak alamat rumah/keluarga: provinsi, kabupaten, kecamatan, desa, rt, rw, alamatLengkap, kodePos. Terakhir, cari data Kepala Keluarga (Ayah). Jika Ayah berstatus hidup/ada di KK, ambil: ayahNik, ayahNama, ayahTempatLahir, ayahTglLahir, ayahPekerjaan, ayahEstimasiGaji. Jika ayah tidak ada/meninggal, isi statusAyah dengan "Meninggal" dan kosongkan detail ayah kecuali namanya. Lakukan hal yang sama persis untuk data Ibu (Isteri/Ibu) di KK (statusIbu). Jika nama ayah dan ibu tidak ada satupun di daftar kartu keluarga, pilih nama seseorang yang paling tua dari daftar keluarga tersebut menjadi wali: waliNama dan waliHubungan. Berikan HANYA format JSON.` },
-                          { inlineData: { mimeType: rawFile.type, data: base64Data } }
-                      ]
-                  }],
-                  generationConfig: {
-                      responseMimeType: "application/json",
-                      responseSchema: {
-                          type: "OBJECT",
-                          properties: {
-                              noKk: { type: "STRING" }, nama: { type: "STRING" }, tempatLahir: { type: "STRING" }, tglLahir: { type: "STRING" }, jenisKelamin: { type: "STRING" }, agama: { type: "STRING" }, 
-                              provinsi: { type: "STRING" }, kabupaten: { type: "STRING" }, kecamatan: { type: "STRING" }, desa: { type: "STRING" }, rt: { type: "STRING" }, rw: { type: "STRING" }, alamatLengkap: { type: "STRING" }, kodePos: { type: "STRING" },
-                              statusAyah: { type: "STRING" }, ayahNik: { type: "STRING" }, ayahNama: { type: "STRING" }, ayahTempatLahir: { type: "STRING" }, ayahTglLahir: { type: "STRING" }, ayahPekerjaan: { type: "STRING" }, ayahEstimasiGaji: { type: "STRING" },
-                              statusIbu: { type: "STRING" }, ibuNik: { type: "STRING" }, ibuNama: { type: "STRING" }, ibuTempatLahir: { type: "STRING" }, ibuTglLahir: { type: "STRING" }, ibuPekerjaan: { type: "STRING" }, ibuEstimasiGaji: { type: "STRING" },
-                              waliNama: { type: "STRING" }, waliHubungan: { type: "STRING" }
-                          }
-                      }
-                  }
-              };
+            const imageData = await processImageForOCR(rawFile);
+            const promptText = `Ekstrak informasi dari dokumen Kartu Keluarga ini. Cari anak dengan NIK: ${formData.nik} dan ekstrak datanya. Terakhir, cari data Kepala Keluarga (Ayah) dan Isteri (Ibu).\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"noKk":"","nama":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":"","statusAyah":"Hidup/Meninggal","ayahNik":"","ayahNama":"","ayahTempatLahir":"","ayahTglLahir":"YYYY-MM-DD","ayahPekerjaan":"","ayahEstimasiGaji":"","statusIbu":"Hidup/Meninggal","ibuNik":"","ibuNama":"","ibuTempatLahir":"","ibuTglLahir":"YYYY-MM-DD","ibuPekerjaan":"","ibuEstimasiGaji":"","waliNama":"","waliHubungan":""}`;
+            
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            };
 
-              try {
-                  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                  const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                  
-                  const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                  if (jsonText) {
-                      const data = JSON.parse(jsonText);
-                      setFormData(prev => ({ 
-                          ...prev, ...data,
-                          statusValidasi: 'Ekstraksi KK dengan Gemini AI Selesai. Silakan isi secara manual untuk Jarak, Transportasi, dan Waktu Tempuh jika diperlukan.' 
-                      }));
-                      setOcrStep('FORM');
-                      showToast("Berhasil mengekstrak data dari KK.", "success");
-                  } else {
-                      throw new Error("Respon kosong");
-                  }
-              } catch (error) {
-                  console.error("OCR Error:", error);
-                  showToast("Gagal memproses gambar. Pastikan API Key valid.", "error");
-              } finally {
-                  setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null);
-              }
-          };
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appConfig.apiKey}`;
+            const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            
+            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (jsonText) {
+                const cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const data = JSON.parse(cleanJson);
+                setFormData(prev => ({ ...prev, ...data, statusValidasi: 'Ekstraksi KK Selesai. Silakan lengkapi form.' }));
+                setOcrStep('FORM');
+                showToast("Berhasil mengekstrak data dari KK.", "success");
+            } else {
+                throw new Error("Respon AI kosong");
+            }
         } catch (error) {
-            setIsExtracting(false); setOcrStatus('');
-            showToast("Terjadi kesalahan saat membaca gambar lokal.", "error");
+            console.error("OCR Error:", error);
+            showToast(`Gagal: ${error.message}`, "error");
+        } finally {
+            setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null);
         }
       };
 
       const runGeminiOCRUstadzKTP = async () => {
+          if (!checkApiReady()) return;
           if (!rawFile) return showToast("Pilih gambar KTP terlebih dahulu!", "error");
-          setIsExtracting(true); setOcrStatus('Menganalisis Pola KTP via Gemini...');
+          setIsExtracting(true); setOcrStatus('Menganalisis KTP via Gemini...');
           
           try {
-            const reader = new FileReader();
-            reader.readAsDataURL(rawFile);
-            reader.onloadend = async () => {
-                const base64Data = reader.result.split(',')[1];
-                const payload = {
-                    contents: [{
-                        role: "user",
-                        parts: [
-                            { text: "Ekstrak informasi dari dokumen KTP ini. Pisahkan nama menjadi tiga bagian: gelarDepan (jika ada, misal Drs., K.H., dll), nama (nama utama tanpa gelar), dan gelarBelakang (jika ada, misal S.Pd., Lc.). Ekstrak juga: nik, tempatLahir, tglLahir, jenisKelamin, agama, golonganDarah, statusPernikahan, pekerjaan, provinsi, kabupaten, kecamatan, desa, rt, rw, alamatLengkap (Jalan/Dusun), dan kodePos. Berikan respon HANYA dalam bentuk JSON." },
-                            { inlineData: { mimeType: rawFile.type, data: base64Data } }
-                        ]
-                    }],
-                    generationConfig: { 
-                        responseMimeType: "application/json", 
-                        responseSchema: { 
-                            type: "OBJECT", 
-                            properties: { 
-                                nik: { type: "STRING" }, gelarDepan: { type: "STRING" }, nama: { type: "STRING" }, gelarBelakang: { type: "STRING" }, tempatLahir: { type: "STRING" }, tglLahir: { type: "STRING" }, jenisKelamin: { type: "STRING" }, agama: { type: "STRING" }, golonganDarah: { type: "STRING" }, statusPernikahan: { type: "STRING" }, pekerjaan: { type: "STRING" }, 
-                                provinsi: { type: "STRING" }, kabupaten: { type: "STRING" }, kecamatan: { type: "STRING" }, desa: { type: "STRING" }, rt: { type: "STRING" }, rw: { type: "STRING" }, alamatLengkap: { type: "STRING" }, kodePos: { type: "STRING" } 
-                            } 
-                        } 
-                    }
-                };
+              const imageData = await processImageForOCR(rawFile);
+              const promptText = `Ekstrak informasi dari dokumen KTP ini. Pisahkan nama menjadi tiga bagian: gelarDepan, nama (tanpa gelar), dan gelarBelakang.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"nik":"","gelarDepan":"","nama":"","gelarBelakang":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","golonganDarah":"","statusPernikahan":"","pekerjaan":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":""}`;
 
-                try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                    const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    
-                    if (jsonText) {
-                        const data = JSON.parse(jsonText);
-                        setFormData(prev => ({ ...prev, ...data }));
-                        setOcrStep('UPLOAD_KK_USTADZ');
-                        showToast("KTP terbaca. Silakan lanjut upload KK untuk data Ibu.", "info");
-                    } else { throw new Error("Respon kosong"); }
-                } catch (error) { 
-                    console.error("OCR KTP Error:", error);
-                    showToast("Gagal memproses KTP.", "error"); 
-                } 
-                finally { setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null); }
-            };
-          } catch (error) { setIsExtracting(false); }
+              const payload = {
+                  contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }],
+                  generationConfig: { responseMimeType: "application/json" }
+              };
+
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appConfig.apiKey}`;
+              const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+              
+              const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (jsonText) {
+                  const cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                  const data = JSON.parse(cleanJson);
+                  setFormData(prev => ({ ...prev, ...data }));
+                  setOcrStep('UPLOAD_KK_USTADZ');
+                  showToast("KTP terbaca. Silakan lanjut upload KK.", "info");
+              } else { 
+                  throw new Error("Respon AI kosong"); 
+              }
+          } catch (error) { 
+              console.error("OCR Error:", error);
+              showToast(`Gagal: ${error.message}`, "error"); 
+          } finally { 
+              setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null); 
+          }
       };
 
       const runGeminiOCRUstadzKK = async () => {
+          if (!checkApiReady()) return;
           if (!rawFile) return showToast("Pilih gambar KK terlebih dahulu!", "error");
-          setIsExtracting(true); setOcrStatus('Mencari Data Ibu di KK via Gemini...');
+          setIsExtracting(true); setOcrStatus('Mencari Data Ibu via Gemini...');
           
           try {
-            const reader = new FileReader();
-            reader.readAsDataURL(rawFile);
-            reader.onloadend = async () => {
-                const base64Data = reader.result.split(',')[1];
-                const payload = {
-                    contents: [{
-                        role: "user",
-                        parts: [
-                            { text: "Ekstrak informasi Ibu kandung dari Kartu Keluarga ini. Temukan nama ibu (ibuNama), status pernikahan ibu jika ada (ibuStatusPernikahan), dan ambil Nomor KK (ibuNoKk). Berikan HANYA JSON." },
-                            { inlineData: { mimeType: rawFile.type, data: base64Data } }
-                        ]
-                    }],
-                    generationConfig: { 
-                        responseMimeType: "application/json", 
-                        responseSchema: { 
-                            type: "OBJECT", 
-                            properties: { ibuNik: { type: "STRING" }, ibuNama: { type: "STRING" }, ibuStatusPernikahan: { type: "STRING" }, ibuNoKk: { type: "STRING" } } 
-                        } 
-                    }
-                };
+              const imageData = await processImageForOCR(rawFile);
+              const promptText = `Ekstrak informasi Ibu kandung dari Kartu Keluarga ini. Temukan nama ibu (ibuNama), status pernikahan ibu jika ada (ibuStatusPernikahan), dan ambil Nomor KK.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"ibuNik":"","ibuNama":"","ibuStatusPernikahan":"","ibuNoKk":""}`;
+              
+              const payload = {
+                  contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }],
+                  generationConfig: { responseMimeType: "application/json" }
+              };
 
-                try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                    const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    
-                    if (jsonText) {
-                        const data = JSON.parse(jsonText);
-                        setFormData(prev => ({ 
-                            ...prev, ...data, 
-                            statusValidasi: 'Ekstraksi KTP & KK Selesai. Silakan lengkapi manual Jarak Tempuh, dll.' 
-                        }));
-                        setOcrStep('FORM');
-                        showToast("Berhasil mengekstrak data Ibu dari KK.", "success");
-                    } else { throw new Error("Respon kosong"); }
-                } catch (error) { 
-                    console.error("OCR KK Ustadz Error:", error);
-                    showToast("Gagal memproses KK.", "error"); 
-                } 
-                finally { setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null); }
-            };
-          } catch (error) { setIsExtracting(false); }
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appConfig.apiKey}`;
+              const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+              
+              const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (jsonText) {
+                  const cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                  const data = JSON.parse(cleanJson);
+                  setFormData(prev => ({ ...prev, ...data, statusValidasi: 'Ekstraksi KTP & KK Selesai. Silakan lengkapi form.' }));
+                  setOcrStep('FORM');
+                  showToast("Berhasil mengekstrak data Ibu dari KK.", "success");
+              } else { 
+                  throw new Error("Respon AI kosong"); 
+              }
+          } catch (error) { 
+              console.error("OCR Error:", error);
+              showToast(`Gagal: ${error.message}`, "error"); 
+          } finally { 
+              setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null); 
+          }
       };
 
       const handleSaveAndStop = async (e) => {
@@ -1156,20 +677,15 @@
         const methodUsed = entryMethod === 'ocr' ? 'OCR Gemini AI' : 'Manual';
         const payloadData = { testerNama: testerInfo.nama, testerLembaga: testerInfo.lembaga, target: targetLabel, method: methodUsed, waktuTempuhDetik: timeElapsed };
 
-        // Integrasi Pengiriman Otomatis ke Backend Eksternal/GAS
         try {
-          if (apiUrl && !apiUrl.includes("GANTI_DENGAN_URL")) {
-             const targetUrl = apiUrl.includes("script.google.com") ? apiUrl : `${apiUrl}/logs`;
+          if (appConfig.gasUrl && appConfig.gasUrl.trim() !== "") {
+             const targetUrl = appConfig.gasUrl.includes("script.google.com") ? appConfig.gasUrl : `${appConfig.gasUrl}/logs`;
              await fetch(targetUrl, { 
-                method: 'POST', 
-                mode: apiUrl.includes("script.google.com") ? 'no-cors' : 'cors',
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(payloadData) 
+                method: 'POST', mode: appConfig.gasUrl.includes("script.google.com") ? 'no-cors' : 'cors',
+                headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payloadData) 
              });
           }
-        } catch(e) {
-          console.warn("Koneksi API bermasalah. Data tetap dicatat di browser lokal.");
-        }
+        } catch(e) {}
 
         setResearchLogs([...researchLogs, { id: `LOG-${Date.now().toString().slice(-4)}`, tester: testerInfo.nama, target: targetLabel, method: methodUsed, duration: timeElapsed, timestamp: new Date().toLocaleTimeString('id-ID') }]);
         
@@ -1184,141 +700,138 @@
       };
 
       return (
-        <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
-          <header className="mb-8">
-            <h2 className="text-3xl font-extrabold text-slate-800 flex items-center gap-3">
-              <div className="bg-blue-100 p-2 rounded-xl text-blue-600">{isSantri ? <Users size={28} /> : <UserCheck size={28} />}</div>
-              Entri Data {targetLabel}
+        <div className="space-y-4 md:space-y-6 animate-fade-in max-w-5xl mx-auto w-full">
+          <header className="mb-4 md:mb-6">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 flex items-center gap-2 md:gap-3">
+              <div className="bg-blue-100 p-1.5 md:p-2 rounded-xl text-blue-600">{isSantri ? <Users size={24} /> : <UserCheck size={24} />}</div>
+              Entri {targetLabel}
             </h2>
-            <p className="text-slate-500 font-medium mt-2">Bandingkan kecepatan Anda menggunakan sistem otomatis vs konvensional.</p>
+            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Bandingkan kecepatan sistem otomatis AI vs konvensional.</p>
           </header>
 
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full scale-150 pointer-events-none -z-10"></div>
-            
+          <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 relative overflow-hidden">
             <div className="relative z-10 w-full md:w-auto">
-              <h3 className="font-bold text-slate-700 mb-3 text-sm uppercase tracking-widest">Pilih Instrumen</h3>
-              <div className="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200/60 shadow-inner overflow-x-auto">
-                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('ocr'); setOcrStep(initialStep); } }} disabled={isTimerRunning} className={`flex-shrink-0 px-4 py-2.5 text-sm font-extrabold rounded-lg transition-all ${entryMethod === 'ocr' ? 'bg-white shadow-sm text-emerald-600 border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>OCR Gemini AI</button>
-                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('manual'); setOcrStep('FORM'); } }} disabled={isTimerRunning} className={`flex-shrink-0 px-4 py-2.5 text-sm font-extrabold rounded-lg transition-all ${entryMethod === 'manual' ? 'bg-white shadow-sm text-blue-600 border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Ketik Manual</button>
+              <h3 className="font-bold text-slate-700 mb-2 md:mb-3 text-[10px] md:text-xs uppercase tracking-widest text-center md:text-left">Pilih Instrumen</h3>
+              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/60 shadow-inner w-full md:w-auto">
+                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('ocr'); setOcrStep(initialStep); } }} disabled={isTimerRunning} className={`flex-1 md:flex-none px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-extrabold rounded-lg transition-all ${entryMethod === 'ocr' ? 'bg-white shadow-sm text-emerald-600 border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>OCR Gemini AI</button>
+                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('manual'); setOcrStep('FORM'); } }} disabled={isTimerRunning} className={`flex-1 md:flex-none px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-extrabold rounded-lg transition-all ${entryMethod === 'manual' ? 'bg-white shadow-sm text-blue-600 border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Ketik Manual</button>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 w-full md:w-auto relative z-10">
-              <div className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-3.5 rounded-2xl font-mono text-3xl font-black border-2 transition-colors ${isTimerRunning && !isProcessingGas ? 'bg-red-50 text-red-600 border-red-200 animate-pulse shadow-inner' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
-                <Timer size={28} className={isTimerRunning && !isProcessingGas ? 'text-red-500' : 'text-slate-400'} /> {formatTime(timeElapsed)}
+            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 w-full md:w-auto relative z-10">
+              <div className={`w-full md:w-auto flex items-center justify-center gap-2 md:gap-3 px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl font-mono text-2xl md:text-3xl font-black border-2 transition-colors ${isTimerRunning && !isProcessingGas ? 'bg-red-50 text-red-600 border-red-200 animate-pulse shadow-inner' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                <Timer size={24} className={isTimerRunning && !isProcessingGas ? 'text-red-500' : 'text-slate-400'} /> {formatTime(timeElapsed)}
               </div>
               {!isTimerRunning ? (
-                <button onClick={handleStartExperiment} className="flex-1 md:flex-none bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 hover:-translate-y-1 transition-all">Mulai</button>
+                <button onClick={handleStartExperiment} className="w-full md:w-auto bg-emerald-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 hover:-translate-y-1 transition-all text-sm md:text-base">Mulai</button>
               ) : (
-                <button onClick={cancelExperiment} className="flex-1 md:flex-none bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-bold hover:bg-slate-300 transition-all border border-slate-300">Batal</button>
+                <button onClick={cancelExperiment} className="w-full md:w-auto bg-slate-200 text-slate-700 px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold hover:bg-slate-300 transition-all border border-slate-300 text-sm md:text-base">Batal</button>
               )}
             </div>
           </div>
 
           {isTimerRunning && entryMethod === 'ocr' && isSantri && (
-            <div className="bg-white p-2 rounded-3xl shadow-sm border border-emerald-100 animate-fade-in">
-              <div className="flex items-center justify-between m-4 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 shadow-inner text-sm">
-                  <div className={`font-bold flex items-center gap-2 ${ocrStep === 'INPUT_NIK' || ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-8 h-8 rounded-full flex justify-center items-center ${ocrStep === 'INPUT_NIK' || ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>1</div>Input NIK</div>
-                  <div className={`h-1.5 flex-1 mx-3 rounded-full ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex items-center gap-2 ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-8 h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>2</div>Upload KK</div>
-                  <div className={`h-1.5 flex-1 mx-3 rounded-full ${ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex items-center gap-2 ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-8 h-8 rounded-full flex justify-center items-center ${ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>3</div>Verifikasi</div>
+            <div className="bg-white p-2 rounded-2xl md:rounded-3xl shadow-sm border border-emerald-100 animate-fade-in w-full overflow-hidden">
+              <div className="flex items-center justify-between m-2 md:m-4 bg-emerald-50/50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-emerald-100 shadow-inner text-[10px] md:text-xs">
+                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'INPUT_NIK' || ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'INPUT_NIK' || ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>1</div><span className="hidden md:inline">Input NIK</span></div>
+                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
+                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>2</div><span className="hidden md:inline">Upload KK</span></div>
+                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
+                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>3</div><span className="hidden md:inline">Verifikasi</span></div>
               </div>
 
               {ocrStep === 'INPUT_NIK' && (
-                <div className="text-center p-12 m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-3xl relative transition-all">
-                  <h4 className="font-extrabold text-slate-800 text-xl mb-4">Masukkan NIK Santri</h4>
-                  <form onSubmit={handleNikSubmit} className="max-w-xs mx-auto">
-                     <input type="text" placeholder="16 Digit NIK" required className="w-full bg-white border-2 border-emerald-200 p-4 rounded-xl text-center font-mono font-bold focus:border-emerald-500 outline-none mb-4" value={tempNik} onChange={e => setTempNik(e.target.value)} />
-                     <button type="submit" className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-600/30 hover:bg-emerald-700">Lanjut ke Upload KK</button>
+                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-xl md:rounded-3xl relative transition-all">
+                  <h4 className="font-extrabold text-slate-800 text-lg md:text-xl mb-3 md:mb-4">Masukkan NIK Santri</h4>
+                  <form onSubmit={handleNikSubmit} className="w-full max-w-xs mx-auto">
+                     <input type="number" placeholder="16 Digit NIK" required className="w-full bg-white border-2 border-emerald-200 p-3 md:p-4 rounded-xl text-center font-mono font-bold focus:border-emerald-500 outline-none mb-3 md:mb-4 text-sm md:text-base" value={tempNik} onChange={e => setTempNik(e.target.value)} />
+                     <button type="submit" className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 text-sm md:text-base">Lanjut ke Upload KK</button>
                   </form>
                 </div>
               )}
 
               {ocrStep === 'UPLOAD_KK' && (
-                <div className="text-center p-12 m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-3xl relative transition-all hover:bg-emerald-50 group">
+                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-xl md:rounded-3xl relative transition-all hover:bg-emerald-50 group">
                   {!filePreview ? (
                     <React.Fragment>
-                      <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm"><Upload size={36} className="text-emerald-600" /></div>
-                      <p className="font-extrabold text-slate-800 text-xl mb-2">Upload Dokumen Kartu Keluarga (KK)</p>
-                      <p className="text-sm text-slate-500 font-medium max-w-sm mx-auto">AI akan mengekstrak data santri beserta data Ibu & Ayahnya.</p>
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm"><Upload size={28} className="text-emerald-600" /></div>
+                      <p className="font-extrabold text-slate-800 text-base md:text-lg mb-1 md:mb-2 px-2">Upload Dokumen (KK)</p>
+                      <p className="text-xs md:text-sm text-slate-500 font-medium max-w-sm mx-auto px-4">AI akan mengekstrak data santri beserta data orang tuanya.</p>
                     </React.Fragment>
                   ) : (
-                     <div className="mb-6">
-                        <img src={filePreview} className="h-48 mx-auto rounded-2xl border-4 border-white shadow-xl rotate-1 group-hover:rotate-0 transition-transform" />
-                        <p className="text-sm font-bold text-emerald-600 mt-4 bg-emerald-100 w-max mx-auto px-4 py-1.5 rounded-full">✓ Gambar KK Siap Diproses</p>
+                     <div className="mb-4 md:mb-6">
+                        <img src={filePreview} className="h-32 md:h-48 mx-auto rounded-xl md:rounded-2xl border-4 border-white shadow-xl transition-transform" />
+                        <p className="text-xs md:text-sm font-bold text-emerald-600 mt-3 md:mt-4 bg-emerald-100 w-max mx-auto px-3 py-1.5 rounded-full">✓ Gambar KK Siap Diproses</p>
                      </div>
                   )}
                   <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <button onClick={runGeminiOCRSantriKK} disabled={isExtracting || !rawFile} className="mt-6 w-full max-w-xs mx-auto bg-emerald-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-emerald-600/30 relative z-20 hover:bg-emerald-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2">
-                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={18}/> {ocrStatus}</React.Fragment> : "Ekstrak Data KK AI"}
+                  <button onClick={runGeminiOCRSantriKK} disabled={isExtracting || !rawFile} className="mt-4 md:mt-6 w-full max-w-xs mx-auto bg-emerald-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-emerald-600/30 relative z-20 hover:bg-emerald-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base">
+                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak Data KK AI"}
                   </button>
                 </div>
               )}
-              {ocrStep === 'FORM' && <div className="p-6 pt-2"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>}
+              {ocrStep === 'FORM' && <div className="p-3 md:p-6 pt-0 md:pt-2"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>}
             </div>
           )}
 
           {isTimerRunning && entryMethod === 'ocr' && !isSantri && (
-            <div className="bg-white p-2 rounded-3xl shadow-sm border border-emerald-100 animate-fade-in">
-              <div className="flex items-center justify-between m-4 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 shadow-inner text-sm">
-                  <div className={`font-bold flex items-center gap-2 ${ocrStep === 'UPLOAD_KTP' || ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-8 h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KTP' || ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>1</div>Upload KTP</div>
-                  <div className={`h-1.5 flex-1 mx-3 rounded-full ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex items-center gap-2 ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-8 h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>2</div>Upload KK</div>
-                  <div className={`h-1.5 flex-1 mx-3 rounded-full ${ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex items-center gap-2 ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-8 h-8 rounded-full flex justify-center items-center ${ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>3</div>Verifikasi</div>
+            <div className="bg-white p-2 rounded-2xl md:rounded-3xl shadow-sm border border-emerald-100 animate-fade-in w-full overflow-hidden">
+              <div className="flex items-center justify-between m-2 md:m-4 bg-emerald-50/50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-emerald-100 shadow-inner text-[10px] md:text-xs">
+                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'UPLOAD_KTP' || ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KTP' || ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>1</div><span className="hidden md:inline">Upload KTP</span></div>
+                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
+                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>2</div><span className="hidden md:inline">Upload KK</span></div>
+                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
+                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>3</div><span className="hidden md:inline">Verifikasi</span></div>
               </div>
 
               {ocrStep === 'UPLOAD_KTP' && (
-                <div className="text-center p-12 m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-3xl relative transition-all hover:bg-emerald-50 group">
+                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-xl md:rounded-3xl relative transition-all hover:bg-emerald-50 group">
                   {!filePreview ? (
                     <React.Fragment>
-                      <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm"><Upload size={36} className="text-emerald-600" /></div>
-                      <p className="font-extrabold text-slate-800 text-xl mb-2">Upload Dokumen KTP</p>
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm"><Upload size={28} className="text-emerald-600" /></div>
+                      <p className="font-extrabold text-slate-800 text-base md:text-lg mb-1 md:mb-2">Upload Dokumen KTP</p>
                     </React.Fragment>
                   ) : (
-                     <div className="mb-6">
-                        <img src={filePreview} className="h-48 mx-auto rounded-2xl border-4 border-white shadow-xl rotate-1 group-hover:rotate-0 transition-transform" />
-                        <p className="text-sm font-bold text-emerald-600 mt-4 bg-emerald-100 w-max mx-auto px-4 py-1.5 rounded-full">✓ Gambar KTP Siap Diproses</p>
+                     <div className="mb-4 md:mb-6">
+                        <img src={filePreview} className="h-32 md:h-48 mx-auto rounded-xl md:rounded-2xl border-4 border-white shadow-xl" />
+                        <p className="text-xs md:text-sm font-bold text-emerald-600 mt-3 md:mt-4 bg-emerald-100 w-max mx-auto px-3 py-1.5 rounded-full">✓ Gambar KTP Siap Diproses</p>
                      </div>
                   )}
                   <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <button onClick={runGeminiOCRUstadzKTP} disabled={isExtracting || !rawFile} className="mt-6 w-full max-w-xs mx-auto bg-emerald-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-emerald-600/30 relative z-20 hover:bg-emerald-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2">
-                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={18}/> {ocrStatus}</React.Fragment> : "Ekstrak KTP AI"}
+                  <button onClick={runGeminiOCRUstadzKTP} disabled={isExtracting || !rawFile} className="mt-4 md:mt-6 w-full max-w-xs mx-auto bg-emerald-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-emerald-600/30 relative z-20 hover:bg-emerald-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base">
+                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak KTP AI"}
                   </button>
                 </div>
               )}
 
               {ocrStep === 'UPLOAD_KK_USTADZ' && (
-                <div className="text-center p-12 m-4 border-2 border-dashed border-purple-300 bg-purple-50/30 rounded-3xl relative transition-all hover:bg-purple-50 group">
+                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-purple-300 bg-purple-50/30 rounded-xl md:rounded-3xl relative transition-all hover:bg-purple-50 group">
                   {!filePreview ? (
                     <React.Fragment>
-                      <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm"><Upload size={36} className="text-purple-600" /></div>
-                      <p className="font-extrabold text-slate-800 text-xl mb-2">Upload Dokumen Kartu Keluarga (KK)</p>
-                      <p className="text-sm text-slate-500 font-medium max-w-sm mx-auto">Untuk melengkapi data Ibu Kandung dari Ustadz.</p>
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm"><Upload size={28} className="text-purple-600" /></div>
+                      <p className="font-extrabold text-slate-800 text-base md:text-lg mb-1 md:mb-2 px-2">Upload Dokumen (KK)</p>
+                      <p className="text-xs md:text-sm text-slate-500 font-medium max-w-sm mx-auto px-4">Untuk melengkapi data Ibu Kandung dari Ustadz.</p>
                     </React.Fragment>
                   ) : (
-                     <div className="mb-6">
-                        <img src={filePreview} className="h-48 mx-auto rounded-2xl border-4 border-white shadow-xl rotate-1 group-hover:rotate-0 transition-transform" />
-                        <p className="text-sm font-bold text-purple-600 mt-4 bg-purple-100 w-max mx-auto px-4 py-1.5 rounded-full">✓ Gambar KK Siap Diproses</p>
+                     <div className="mb-4 md:mb-6">
+                        <img src={filePreview} className="h-32 md:h-48 mx-auto rounded-xl md:rounded-2xl border-4 border-white shadow-xl" />
+                        <p className="text-xs md:text-sm font-bold text-purple-600 mt-3 md:mt-4 bg-purple-100 w-max mx-auto px-3 py-1.5 rounded-full">✓ Gambar KK Siap Diproses</p>
                      </div>
                   )}
                   <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <button onClick={runGeminiOCRUstadzKK} disabled={isExtracting || !rawFile} className="mt-6 w-full max-w-xs mx-auto bg-purple-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-purple-600/30 relative z-20 hover:bg-purple-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2">
-                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={18}/> {ocrStatus}</React.Fragment> : "Ekstrak Data Ibu via KK"}
+                  <button onClick={runGeminiOCRUstadzKK} disabled={isExtracting || !rawFile} className="mt-4 md:mt-6 w-full max-w-xs mx-auto bg-purple-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-purple-600/30 relative z-20 hover:bg-purple-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base">
+                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak Data Ibu via KK"}
                   </button>
                 </div>
               )}
 
-              {ocrStep === 'FORM' && <div className="p-6 pt-2"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>}
+              {ocrStep === 'FORM' && <div className="p-3 md:p-6 pt-0 md:pt-2"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>}
             </div>
           )}
 
           {isTimerRunning && entryMethod === 'manual' && (
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 animate-fade-in relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-slate-100 rounded-full blur-3xl opacity-50 -translate-y-20 translate-x-20 pointer-events-none"></div>
-              <h3 className="font-extrabold text-2xl mb-8 text-slate-800 flex items-center gap-3 relative z-10"><div className="bg-slate-200 p-2 rounded-xl text-slate-700"><User size={24}/></div> Formulir Entri Konvensional</h3>
+            <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 animate-fade-in relative overflow-hidden w-full">
+              <h3 className="font-extrabold text-lg md:text-2xl mb-4 md:mb-6 text-slate-800 flex items-center gap-2 md:gap-3 relative z-10"><div className="bg-slate-200 p-1.5 md:p-2 rounded-xl text-slate-700"><User size={20}/></div> Formulir Konvensional</h3>
               <div className="relative z-10"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>
             </div>
           )}
@@ -1348,46 +861,46 @@
         
         setDokumenReq([...dokumenReq, newReq]);
         setSelectedUstadz('');
-        showToast("Pengajuan dokumen berhasil dibuat. Menunggu persetujuan pimpinan.", "success");
+        showToast("Pengajuan dokumen berhasil dibuat.", "success");
       };
 
       return (
-        <div className="animate-fade-in space-y-6 max-w-6xl mx-auto">
-          <header className="mb-6 border-b pb-4"><h2 className="text-3xl font-extrabold text-slate-800">Pengajuan Surat Kelembagaan</h2><p className="text-slate-500 font-medium mt-1">Sistem akan menarik data nama dari hasil pengujian memori lokal Anda.</p></header>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm h-fit">
-              <h3 className="font-extrabold text-lg mb-6 text-slate-800 flex items-center gap-2"><PlusCircle className="text-emerald-500"/> Form Pengajuan Baru</h3>
-              <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="animate-fade-in space-y-4 md:space-y-6 max-w-6xl mx-auto">
+          <header className="mb-4 md:mb-6 border-b pb-3 md:pb-4"><h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Pengajuan Surat</h2><p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Sistem menarik data nama dari hasil pengujian memori lokal Anda.</p></header>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-1 bg-white p-5 md:p-8 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm h-fit">
+              <h3 className="font-extrabold text-base md:text-lg mb-4 md:mb-6 text-slate-800 flex items-center gap-2"><PlusCircle className="text-emerald-500" size={20}/> Pengajuan Baru</h3>
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Pilih Nama Sesuai Entri Data</label>
-                  <select className="w-full border-2 border-slate-200 rounded-xl p-3.5 outline-none font-bold text-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50 focus:bg-white" value={selectedUstadz} onChange={(e) => setSelectedUstadz(e.target.value)} required>
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 mb-1.5 md:mb-2 uppercase tracking-wide">Pilih Nama Sesuai Entri Data</label>
+                  <select className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none font-bold text-slate-700 focus:border-emerald-500 focus:ring-2 transition bg-slate-50 focus:bg-white text-sm md:text-base" value={selectedUstadz} onChange={(e) => setSelectedUstadz(e.target.value)} required>
                     <option value="">-- Pilih --</option>
                     {ustadzData.map(u => <option key={u.id} value={u.id}>{u.nama}</option>)}
                   </select>
-                  {ustadzData.length === 0 && <p className="text-xs text-amber-600 mt-2 font-medium bg-amber-50 p-2 rounded border border-amber-100">Database lokal kosong. Masuk ke modul Simulasi Entri Ustadz terlebih dahulu.</p>}
+                  {ustadzData.length === 0 && <p className="text-[10px] md:text-xs text-amber-600 mt-2 font-medium bg-amber-50 p-2 rounded border border-amber-100">Database lokal kosong. Masuk ke modul Simulasi Entri Ustadz terlebih dahulu.</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Kategori Dokumen Legal</label>
-                  <select className="w-full border-2 border-slate-200 rounded-xl p-3.5 outline-none font-bold text-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50 focus:bg-white" value={jenisSurat} onChange={(e) => setJenisSurat(e.target.value)}>
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 mb-1.5 md:mb-2 uppercase tracking-wide">Kategori Dokumen Legal</label>
+                  <select className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none font-bold text-slate-700 focus:border-emerald-500 focus:ring-2 transition bg-slate-50 focus:bg-white text-sm md:text-base" value={jenisSurat} onChange={(e) => setJenisSurat(e.target.value)}>
                     <option>Surat Tugas Mengajar</option><option>Surat Keterangan Aktif</option><option>Surat Rekomendasi</option>
                   </select>
                 </div>
-                <button type="submit" disabled={ustadzData.length === 0} className="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-slate-900 disabled:opacity-50 transition-all shadow-lg mt-4">Kirim ke Meja Kepala</button>
+                <button type="submit" disabled={ustadzData.length === 0} className="w-full bg-slate-800 text-white py-3 md:py-4 rounded-xl font-bold hover:bg-slate-900 disabled:opacity-50 transition-all shadow-lg mt-2 md:mt-4 text-sm md:text-base">Kirim ke Meja Kepala</button>
               </form>
             </div>
-            <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-              <div className="p-6 bg-slate-50 border-b border-slate-100"><h3 className="font-extrabold text-slate-800">Daftar Tunggu & Riwayat</h3></div>
-              <div className="flex-1 overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="bg-white border-b border-slate-100 uppercase text-[10px] font-extrabold tracking-widest text-slate-400"><tr><th className="p-5">Nama Lengkap</th><th className="p-5">Kategori Dokumen</th><th className="p-5">Status</th></tr></thead>
+            <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col w-full">
+              <div className="p-4 md:p-6 bg-slate-50 border-b border-slate-100"><h3 className="font-extrabold text-slate-800 text-sm md:text-base">Daftar Tunggu & Riwayat</h3></div>
+              <div className="flex-1 overflow-x-auto w-full">
+                <table className="w-full text-left text-xs md:text-sm text-slate-600 whitespace-nowrap md:whitespace-normal">
+                  <thead className="bg-white border-b border-slate-100 uppercase text-[9px] md:text-[10px] font-extrabold tracking-widest text-slate-400"><tr><th className="p-3 md:p-5">Nama Lengkap</th><th className="p-3 md:p-5">Kategori Dokumen</th><th className="p-3 md:p-5">Status</th></tr></thead>
                   <tbody>
                     {dokumenReq.map(req => (
                       <tr key={req.id} className="border-b border-slate-50 hover:bg-slate-50">
-                        <td className="p-5 font-bold text-slate-800">{req.nama}</td><td className="p-5 font-medium">{req.jenis}</td>
-                        <td className="p-5">{req.status === 'Pending' ? <span className="bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 w-max"><Clock size={12}/> Review Pimpinan</span> : <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 w-max"><CheckCircle size={12}/> Dokumen TTE Terbit</span>}</td>
+                        <td className="p-3 md:p-5 font-bold text-slate-800">{req.nama}</td><td className="p-3 md:p-5 font-medium">{req.jenis}</td>
+                        <td className="p-3 md:p-5">{req.status === 'Pending' ? <span className="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 w-max"><Clock size={10}/> Review Pimpinan</span> : <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 w-max"><CheckCircle size={10}/> Dokumen TTE Terbit</span>}</td>
                       </tr>
                     ))}
-                    {dokumenReq.length === 0 && <tr><td colSpan="3" className="text-center p-16"><FileText size={48} className="mx-auto text-slate-300 mb-4"/><p className="text-slate-400 font-medium">Belum ada pengajuan surat yang dicatat.</p></td></tr>}
+                    {dokumenReq.length === 0 && <tr><td colSpan="3" className="text-center p-10 md:p-16"><FileText size={36} className="mx-auto text-slate-300 mb-3"/><p className="text-slate-400 font-medium text-xs md:text-sm">Belum ada pengajuan surat.</p></td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -1406,20 +919,20 @@
       const pendingReqs = dokumenReq.filter(r => r.status === 'Pending');
 
       return (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in max-w-5xl mx-auto">
-          <div className="p-6 bg-amber-50 border-b border-amber-100 flex items-center gap-3"><AlertCircle className="text-amber-600"/><h3 className="font-extrabold text-amber-900 text-lg">Menunggu Tanda Tangan Anda (Pimpinan)</h3></div>
-          <div className="overflow-x-auto p-4">
-            <table className="w-full text-left text-sm text-slate-600">
-              <thead className="uppercase text-[10px] font-extrabold tracking-widest text-slate-400 border-b border-slate-100"><tr><th className="p-4">Identitas Pemohon</th><th className="p-4">Klasifikasi Surat</th><th className="p-4 text-right">Otorisasi</th></tr></thead>
+        <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in max-w-5xl mx-auto w-full">
+          <div className="p-4 md:p-6 bg-amber-50 border-b border-amber-100 flex items-center gap-2 md:gap-3"><AlertCircle className="text-amber-600" size={20}/><h3 className="font-extrabold text-amber-900 text-sm md:text-lg">Menunggu Persetujuan Anda</h3></div>
+          <div className="overflow-x-auto w-full p-2 md:p-4">
+            <table className="w-full text-left text-xs md:text-sm text-slate-600 whitespace-nowrap md:whitespace-normal">
+              <thead className="uppercase text-[9px] md:text-[10px] font-extrabold tracking-widest text-slate-400 border-b border-slate-100"><tr><th className="p-3 md:p-4">Identitas Pemohon</th><th className="p-3 md:p-4">Klasifikasi Surat</th><th className="p-3 md:p-4 text-right">Otorisasi</th></tr></thead>
               <tbody>
                 {pendingReqs.map(req => (
                   <tr key={req.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="p-4"><p className="font-black text-slate-800 text-base">{req.nama}</p><p className="text-xs font-mono text-slate-400 mt-1">{req.id}</p></td>
-                    <td className="p-4 font-semibold text-slate-700">{req.jenis}</td>
-                    <td className="p-4 text-right"><button onClick={() => handleApprove(req.id)} className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-md shadow-emerald-600/20 flex items-center gap-2 ml-auto"><QrCode size={14}/> Setujui & Beri TTE QR</button></td>
+                    <td className="p-3 md:p-4"><p className="font-black text-slate-800 text-sm md:text-base">{req.nama}</p><p className="text-[10px] md:text-xs font-mono text-slate-400 mt-0.5">{req.id}</p></td>
+                    <td className="p-3 md:p-4 font-semibold text-slate-700">{req.jenis}</td>
+                    <td className="p-3 md:p-4 text-right"><button onClick={() => handleApprove(req.id)} className="bg-emerald-600 text-white px-3 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold hover:bg-emerald-700 transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5 md:gap-2 ml-auto"><QrCode size={12}/> Setujui (TTE)</button></td>
                   </tr>
                 ))}
-                {pendingReqs.length === 0 && <tr><td colSpan="3" className="text-center p-20 text-slate-400 font-medium"><CheckCircle size={48} className="mx-auto mb-4 text-slate-200"/>Semua dokumen telah diperiksa. Meja kerja Anda bersih.</td></tr>}
+                {pendingReqs.length === 0 && <tr><td colSpan="3" className="text-center p-10 md:p-20 text-slate-400 font-medium text-xs md:text-sm"><CheckCircle size={36} className="mx-auto mb-3 text-slate-200"/>Semua dokumen telah diperiksa.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -1432,37 +945,37 @@
       const approvedReqs = dokumenReq.filter(r => r.status === 'Disetujui');
 
       return (
-        <div className="animate-fade-in print:m-0 print:p-0 max-w-6xl mx-auto">
-          <header className="mb-8 border-b pb-4 print:hidden"><h2 className="text-3xl font-extrabold text-slate-800">Arsip Dokumen Tercetak</h2><p className="text-slate-500 font-medium mt-1">Dokumen resmi yang telah melewati validasi TTE QR Code siap diunduh/dicetak.</p></header>
+        <div className="animate-fade-in print:m-0 print:p-0 max-w-6xl mx-auto w-full">
+          <header className="mb-6 md:mb-8 border-b pb-3 md:pb-4 print:hidden"><h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Arsip Dokumen</h2><p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Dokumen resmi yang telah divalidasi siap dicetak.</p></header>
 
           {!selectedDoc ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {approvedReqs.map(doc => (
-                <div key={doc.id} className="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition group flex flex-col justify-between">
+                <div key={doc.id} className="bg-white p-5 md:p-7 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition group flex flex-col justify-between">
                   <div>
-                     <div className="flex justify-between items-start mb-4">
-                        <div className="bg-slate-100 p-3 rounded-2xl text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition"><FileText size={24} /></div>
-                        <span className="text-[10px] font-mono font-bold bg-slate-50 px-2.5 py-1 rounded-lg border text-slate-500">{doc.docId}</span>
+                     <div className="flex justify-between items-start mb-3 md:mb-4">
+                        <div className="bg-slate-100 p-2 md:p-3 rounded-xl md:rounded-2xl text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition"><FileText size={20} /></div>
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold bg-slate-50 px-2 py-1 rounded-md md:rounded-lg border text-slate-500">{doc.docId}</span>
                      </div>
-                     <h4 className="font-extrabold text-slate-800 text-lg line-clamp-2 leading-tight">{doc.jenis}</h4>
-                     <p className="text-sm text-slate-500 mt-2 font-medium">A.n. <b className="text-slate-700">{doc.nama}</b></p>
+                     <h4 className="font-extrabold text-slate-800 text-base md:text-lg line-clamp-2 leading-tight">{doc.jenis}</h4>
+                     <p className="text-xs md:text-sm text-slate-500 mt-1 md:mt-2 font-medium">A.n. <b className="text-slate-700">{doc.nama}</b></p>
                   </div>
-                  <button onClick={() => setSelectedDoc(doc)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 py-3 rounded-xl text-sm font-bold mt-6 group-hover:bg-emerald-600 group-hover:border-emerald-600 group-hover:text-white transition flex items-center justify-center gap-2"><Search size={16}/> Pratinjau Surat</button>
+                  <button onClick={() => setSelectedDoc(doc)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-bold mt-4 md:mt-6 group-hover:bg-emerald-600 group-hover:border-emerald-600 group-hover:text-white transition flex items-center justify-center gap-2"><Search size={14}/> Pratinjau Surat</button>
                 </div>
               ))}
-              {approvedReqs.length === 0 && <div className="col-span-full text-center py-24 bg-white border-2 border-dashed border-slate-200 rounded-3xl"><FileSearch size={48} className="mx-auto text-slate-300 mb-4"/><p className="font-bold text-slate-400">Belum ada dokumen yang diterbitkan.</p></div>}
+              {approvedReqs.length === 0 && <div className="col-span-full text-center py-16 md:py-24 bg-white border-2 border-dashed border-slate-200 rounded-2xl md:rounded-3xl"><FileSearch size={36} className="mx-auto text-slate-300 mb-3"/><p className="font-bold text-slate-400 text-sm">Belum ada dokumen diterbitkan.</p></div>}
             </div>
           ) : (
-            <div className="bg-slate-200 rounded-[2rem] shadow-2xl border border-slate-300 max-w-4xl mx-auto pb-12 print:shadow-none print:border-none print:bg-white print:pb-0 overflow-hidden">
-              <div className="bg-slate-800 p-5 flex justify-between items-center text-white print:hidden">
-                <span className="font-mono text-sm font-bold flex items-center gap-2"><ClipboardList size={18}/> Pratinjau Mode Cetak Kertas (A4)</span>
-                <div className="flex gap-3">
-                  <button onClick={() => window.print()} className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-5 py-2 rounded-xl text-sm flex items-center gap-2 transition"><Download size={16}/> Cetak / PDF</button>
-                  <button onClick={() => setSelectedDoc(null)} className="bg-slate-700 hover:bg-slate-600 px-5 py-2 rounded-xl text-sm font-bold transition">Tutup Pratinjau</button>
+            <div className="bg-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl border border-slate-300 max-w-4xl mx-auto pb-8 md:pb-12 print:shadow-none print:border-none print:bg-white print:pb-0 overflow-hidden w-full overflow-x-auto">
+              <div className="bg-slate-800 p-3 md:p-5 flex flex-col md:flex-row justify-between items-center text-white print:hidden gap-3 min-w-[600px] md:min-w-full">
+                <span className="font-mono text-xs md:text-sm font-bold flex items-center gap-2"><ClipboardList size={16}/> Pratinjau Kertas A4</span>
+                <div className="flex gap-2 md:gap-3 w-full md:w-auto">
+                  <button onClick={() => window.print()} className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-3 py-2 md:px-5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm flex items-center justify-center gap-2 transition"><Download size={14}/> Cetak PDF</button>
+                  <button onClick={() => setSelectedDoc(null)} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-3 py-2 md:px-5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition">Tutup</button>
                 </div>
               </div>
               
-              <div className="mx-auto mt-10 bg-white text-black shadow-2xl print:shadow-none print:mt-0 print:w-full relative" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
+              <div className="mx-auto mt-6 md:mt-10 bg-white text-black shadow-2xl print:shadow-none print:mt-0 relative scale-75 md:scale-100 origin-top" style={{ width: '210mm', minHeight: '297mm', padding: '20mm', marginBottom: '-25%' }}>
                 <div className="flex flex-col mb-8">
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-[110px] h-[110px] flex items-center justify-center flex-shrink-0">
@@ -1490,7 +1003,7 @@
                   </tbody>
                 </table>
                 
-                <p className="text-left mb-20 text-lg leading-loose text-justify">Adalah benar yang bersangkutan merupakan tenaga pendidik/staf yang aktif di lembaga kami. Demikian dokumen administrasi ini dibuat secara sah melalui sistem terpadu untuk dapat dipergunakan sebagaimana mestinya.</p>
+                <p className="text-left mb-20 text-lg leading-loose text-justify">Adalah benar yang bersangkutan merupakan tenaga pendidik/staf yang aktif di lembaga kami. Demikian dokumen administrasi fungsional ini dibuat secara sah melalui sistem terpadu untuk dapat dipergunakan sebagaimana mestinya.</p>
                 
                 <div className="flex justify-end pr-4">
                   <div className="text-center">
@@ -1500,7 +1013,9 @@
                       <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedDoc.docId}`} alt="QR Code TTE" className="w-28 h-28 mix-blend-multiply" />
                       <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-3 py-0.5 text-[11px] font-black text-emerald-900 border-2 border-emerald-900 rounded-full">TTE SAH</div>
                     </div>
-                    <p className="text-sm font-mono font-bold text-slate-800 bg-slate-100 py-1.5 px-4 rounded-lg mt-3 uppercase border border-slate-300">ID: {selectedDoc.docId}</p>
+                    {/* Penambahan Nama Kepala TPQ di Bawah TTE */}
+                    <p className="text-lg font-bold underline underline-offset-4 uppercase">{testerInfo?.namaKepala || '..........................'}</p>
+                    <p className="text-sm font-mono font-bold text-slate-800 bg-slate-100 py-1.5 px-4 rounded-lg mt-3 uppercase border border-slate-300 w-max mx-auto">ID: {selectedDoc.docId}</p>
                   </div>
                 </div>
               </div>
@@ -1523,34 +1038,34 @@
       };
 
       return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] relative">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+        <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] relative">
+          <div className="absolute top-0 right-0 w-64 md:w-96 h-64 md:h-96 bg-blue-600/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
 
-          <div className="w-full max-w-lg relative z-10">
-            <button onClick={onBack} className="text-white font-bold mb-6 flex items-center gap-2 bg-white/10 hover:bg-white/20 px-5 py-2.5 rounded-xl border border-white/20 backdrop-blur-sm transition">Kembali ke Beranda</button>
-            <div className="bg-white p-10 rounded-[2rem] shadow-2xl border-t-8 border-t-blue-500 text-center">
-              <div className="bg-blue-100 w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6"><QrCode className="text-blue-600" size={40} /></div>
-              <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">Verifikasi Publik QR</h2>
-              <p className="text-slate-500 font-medium mb-8">Masukkan ID Dokumen (Contoh: DOC-LPQ-XXXX) yang tertera di bawah QR Code Surat.</p>
+          <div className="w-full max-w-lg relative z-10 my-4">
+            <button onClick={onBack} className="text-white text-sm md:text-base font-bold mb-4 md:mb-6 flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 md:px-5 md:py-2.5 rounded-xl border border-white/20 backdrop-blur-sm transition">Kembali ke Beranda</button>
+            <div className="bg-white p-6 md:p-10 rounded-2xl md:rounded-[2rem] shadow-2xl border-t-8 border-t-blue-500 text-center">
+              <div className="bg-blue-100 w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 md:mb-6"><QrCode className="text-blue-600" size={32} /></div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-2 tracking-tight">Verifikasi Publik QR</h2>
+              <p className="text-xs md:text-sm text-slate-500 font-medium mb-6 md:mb-8 px-2">Masukkan ID Dokumen yang tertera di bawah QR Code Surat.</p>
               
-              <form onSubmit={handleVerify} className="mb-8 relative">
-                <input type="text" placeholder="ID DOKUMEN" className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl py-4 pl-5 pr-32 text-xl font-mono uppercase font-black text-center text-slate-800 focus:border-blue-500 outline-none transition" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-                <button type="submit" className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-bold transition shadow-md shadow-blue-600/30"><Search size={20}/></button>
+              <form onSubmit={handleVerify} className="mb-6 md:mb-8 relative flex flex-col md:block gap-3">
+                <input type="text" placeholder="ID DOKUMEN" className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl py-3 md:py-4 px-4 md:pl-5 md:pr-32 text-lg md:text-xl font-mono uppercase font-black text-center text-slate-800 focus:border-blue-500 outline-none transition" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
+                <button type="submit" className="w-full md:w-auto md:absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white py-3 md:py-0 px-6 rounded-xl font-bold transition shadow-md shadow-blue-600/30 flex justify-center items-center"><Search size={20}/></button>
               </form>
 
               {result === 'not_found' && (
-                <div className="bg-red-50 text-red-800 p-6 rounded-2xl border border-red-200 animate-fade-in text-left flex gap-4 items-start">
-                  <div className="bg-red-200 p-2 rounded-full flex-shrink-0"><X className="text-red-600" size={24} /></div>
-                  <div><p className="font-black text-lg leading-none mb-1 text-red-900">DOKUMEN TIDAK VALID</p><p className="text-sm font-medium">Sistem kami tidak menemukan rekam jejak Tanda Tangan Elektronik dengan ID tersebut.</p></div>
+                <div className="bg-red-50 text-red-800 p-4 md:p-6 rounded-xl md:rounded-2xl border border-red-200 animate-fade-in text-left flex gap-3 md:gap-4 items-start">
+                  <div className="bg-red-200 p-1.5 md:p-2 rounded-full flex-shrink-0"><X className="text-red-600" size={20} /></div>
+                  <div><p className="font-black text-base md:text-lg leading-none mb-1 text-red-900">TIDAK VALID</p><p className="text-xs md:text-sm font-medium">Sistem tidak menemukan rekam jejak ID tersebut.</p></div>
                 </div>
               )}
               {result === 'found' && docData && (
-                <div className="bg-emerald-50 text-emerald-900 p-6 rounded-2xl border border-emerald-200 animate-fade-in text-left">
-                  <div className="flex items-center gap-3 border-b border-emerald-200/60 pb-4 mb-4"><div className="bg-emerald-500 text-white p-1.5 rounded-full"><CheckCircle size={20} /></div><span className="font-black text-xl tracking-wide text-emerald-800">DOKUMEN ASLI & SAH</span></div>
-                  <div className="space-y-4">
-                    <div><p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">ID Terdaftar</p><p className="font-mono font-bold text-emerald-900 bg-white px-3 py-1.5 rounded-lg border border-emerald-100 inline-block">{docData.docId}</p></div>
-                    <div><p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Diterbitkan Atas Nama</p><p className="font-black text-lg text-emerald-950 uppercase">{docData.nama}</p></div>
-                    <div><p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Klasifikasi Surat Resmi</p><p className="font-bold text-emerald-800">{docData.jenis}</p></div>
+                <div className="bg-emerald-50 text-emerald-900 p-4 md:p-6 rounded-xl md:rounded-2xl border border-emerald-200 animate-fade-in text-left">
+                  <div className="flex items-center gap-2 md:gap-3 border-b border-emerald-200/60 pb-3 md:pb-4 mb-3 md:mb-4"><div className="bg-emerald-500 text-white p-1 md:p-1.5 rounded-full"><CheckCircle size={16} /></div><span className="font-black text-lg md:text-xl tracking-wide text-emerald-800">ASLI & SAH</span></div>
+                  <div className="space-y-3 md:space-y-4">
+                    <div><p className="text-[9px] md:text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">ID Terdaftar</p><p className="font-mono font-bold text-emerald-900 bg-white px-2 py-1 md:px-3 md:py-1.5 rounded-md md:rounded-lg border border-emerald-100 inline-block text-xs md:text-sm">{docData.docId}</p></div>
+                    <div><p className="text-[9px] md:text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Diterbitkan Atas Nama</p><p className="font-black text-base md:text-lg text-emerald-950 uppercase">{docData.nama}</p></div>
+                    <div><p className="text-[9px] md:text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Klasifikasi Surat Resmi</p><p className="font-bold text-emerald-800 text-xs md:text-sm">{docData.jenis}</p></div>
                   </div>
                 </div>
               )}
@@ -1562,9 +1077,204 @@
     
     function SidebarItem({ icon, label, active, onClick }) {
       return (
-        <button onClick={onClick} className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${active ? 'bg-emerald-50 text-emerald-800 shadow-md transform translate-x-2' : 'text-emerald-100 hover:bg-emerald-800/50 hover:text-white'}`}>
-          {icon} <span className="tracking-wide text-left flex-1">{label}</span>
+        <button onClick={onClick} className={`w-full flex items-center gap-3 md:gap-4 px-4 py-3 md:px-5 md:py-3.5 rounded-xl md:rounded-2xl transition-all duration-300 font-bold text-xs md:text-sm ${active ? 'bg-emerald-50 text-emerald-800 shadow-md transform translate-x-2' : 'text-emerald-100 hover:bg-emerald-800/50 hover:text-white'}`}>
+          <div className="flex-shrink-0">{icon}</div> <span className="tracking-wide text-left flex-1 line-clamp-1">{label}</span>
         </button>
+      );
+    }
+
+    function App() {
+      // 1. Cek apakah ada konfigurasi di LocalStorage (Jika tidak ada, default kosongan tanpa memblokir UI)
+      const [appConfig, setAppConfig] = useState(() => {
+        const saved = localStorage.getItem('lpq_app_config');
+        return saved ? JSON.parse(saved) : { apiKey: '', gasUrl: '' };
+      });
+
+      const [testerInfo, setTesterInfo] = useState(null);
+      const [currentRole, setCurrentRole] = useState(null); 
+      
+      const [santriData, setSantriData] = useState([]);
+      const [ustadzData, setUstadzData] = useState([]);
+      const [dokumenReq, setDokumenReq] = useState([]);
+      const [researchLogs, setResearchLogs] = useState([]);
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+      
+      const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+      const showToast = (message, type = 'info') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 5000);
+      };
+
+      const hasOcrSantri = researchLogs.some(l => l.target === 'Santri' && l.method === 'OCR Gemini AI');
+      const hasOcrUstadz = researchLogs.some(l => l.target === 'Ustadz' && l.method === 'OCR Gemini AI');
+      const hasManual = researchLogs.some(l => l.method === 'Manual');
+      const isKuisionerUnlocked = hasOcrSantri && hasOcrUstadz && hasManual;
+
+      const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        setIsMobileMenuOpen(false);
+      };
+
+      // 2. ALUR APLIKASI
+      
+      if (!testerInfo && currentRole !== 'admin' && currentRole !== 'public') {
+        return (
+          <React.Fragment>
+            <WelcomeTesterScreen setTesterInfo={setTesterInfo} setRole={setCurrentRole} showToast={showToast} />
+            <ToastNotification toast={toast} setToast={setToast} />
+          </React.Fragment>
+        );
+      }
+
+      if (!currentRole) {
+        return (
+          <React.Fragment>
+            <LoginScreen setRole={setCurrentRole} testerInfo={testerInfo} />
+            <ToastNotification toast={toast} setToast={setToast} />
+          </React.Fragment>
+        );
+      }
+
+      if (currentRole === 'public') {
+        return (
+          <React.Fragment>
+            <PublicVerificationScreen onBack={() => { setCurrentRole(null); setActiveTab('dashboard'); }} dokumenReq={dokumenReq} />
+            <ToastNotification toast={toast} setToast={setToast} />
+          </React.Fragment>
+        );
+      }
+      
+      return (
+        <div className="min-h-screen flex flex-col md:flex-row font-sans bg-[#F8FAFC]">
+          
+          {/* HEADER MOBILE */}
+          <div className="md:hidden bg-emerald-900 text-white p-4 flex justify-between items-center shadow-md relative z-40 mobile-header">
+             <div className="flex items-center gap-3">
+               <div className="bg-white p-1 rounded-lg w-8 h-8 flex justify-center items-center overflow-hidden">
+                   {currentRole === 'admin' ? <Activity color="#064e3b" size={20} /> : testerInfo?.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain" /> : <FileSignature color="#064e3b" size={20} />}
+               </div>
+               <div>
+                  <h1 className="font-bold text-sm leading-tight line-clamp-1">{currentRole === 'admin' ? 'Pusat Riset' : (testerInfo?.lembaga || 'Portal Riset')}</h1>
+                  <p className="text-emerald-400 text-[10px] uppercase font-bold tracking-widest">{currentRole}</p>
+               </div>
+             </div>
+             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 bg-emerald-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                {isMobileMenuOpen ? <X size={20}/> : <MenuIcon size={20}/>}
+             </button>
+          </div>
+
+          {/* OVERLAY MOBILE MENU */}
+          {isMobileMenuOpen && (
+              <div className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
+          )}
+
+          {/* SIDEBAR */}
+          <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 fixed md:sticky top-0 left-0 h-[100dvh] w-[280px] md:w-72 bg-emerald-900 text-white flex flex-col shadow-2xl z-50 print:hidden overflow-hidden`}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-800 rounded-full blur-3xl opacity-50 -translate-y-10 translate-x-10 pointer-events-none"></div>
+            
+            <div className="p-6 md:p-8 text-center border-b border-emerald-800 relative z-10 hidden md:block">
+              <div className="bg-white p-2 rounded-2xl w-24 h-24 mx-auto mb-4 flex items-center justify-center shadow-lg overflow-hidden border-2 border-emerald-100">
+                {currentRole === 'admin' ? <Activity color="#064e3b" size={48} /> : testerInfo?.logo ? <img src={testerInfo.logo} alt="Logo" className="w-full h-full object-contain" /> : <FileSignature color="#064e3b" size={48} />}
+              </div>
+              <h1 className="font-bold text-xl leading-tight line-clamp-2 tracking-wide text-emerald-50">{currentRole === 'admin' ? 'Pusat Riset Bab 4' : (testerInfo?.lembaga || 'Portal Riset')}</h1>
+              <p className="text-emerald-400 text-xs mt-2 px-2 uppercase font-semibold tracking-widest">{currentRole === 'admin' ? 'Dashboard Peneliti' : 'SIAKAD Prototype'}</p>
+            </div>
+            
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto relative z-10 custom-scrollbar">
+              {currentRole === 'admin' && (
+                <SidebarItem icon={<LineChart />} label="Dashboard Statistik" active={activeTab === 'admin-dashboard'} onClick={() => handleTabChange('admin-dashboard')} />
+              )}
+              {currentRole === 'operator' && (
+                <React.Fragment>
+                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-4 px-3">Eksperimen Waktu</p>
+                  <SidebarItem icon={<Users />} label="Simulasi Entri Santri" active={activeTab === 'ocr-santri'} onClick={() => handleTabChange('ocr-santri')} />
+                  <SidebarItem icon={<UserCheck />} label="Simulasi Entri Ustadz" active={activeTab === 'ocr-ustadz'} onClick={() => handleTabChange('ocr-ustadz')} />
+                  <SidebarItem icon={<BarChart />} label="Laporan Metrik" active={activeTab === 'report'} onClick={() => handleTabChange('report')} />
+                  
+                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Evaluasi</p>
+                  <SidebarItem 
+                      icon={isKuisionerUnlocked ? <MessageSquare /> : <Lock />} 
+                      label="Kuisioner Kepuasan" 
+                      active={activeTab === 'kuisioner'} 
+                      onClick={() => {
+                          if (isKuisionerUnlocked) handleTabChange('kuisioner');
+                          else showToast("Selesaikan minimal 1x OCR Santri, 1x OCR Ustadz, dan 1x Manual untuk membuka!", "error");
+                      }} 
+                  />
+
+                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Modul Administrasi</p>
+                  <SidebarItem icon={<FileText />} label="Pengajuan Surat" active={activeTab === 'request'} onClick={() => handleTabChange('request')} />
+                  <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Dokumen" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
+                </React.Fragment>
+              )}
+              {currentRole === 'kepala' && (
+                <React.Fragment>
+                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-4 px-3">Otoritas Pimpinan</p>
+                  <SidebarItem icon={<ShieldCheck />} label="Approval Pengajuan" active={activeTab === 'approval'} onClick={() => handleTabChange('approval')} />
+                  <SidebarItem icon={<FileCheck />} label="Arsip Dokumen Resmi" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
+                </React.Fragment>
+              )}
+            </nav>
+
+            <div className="p-4 md:p-5 bg-emerald-950/50 backdrop-blur-md relative z-10 border-t border-emerald-800/50 pb-8 md:pb-5">
+              <div className="flex items-center gap-3 mb-4 md:mb-5 px-1">
+                <div className="bg-emerald-800 rounded-xl p-2 shadow-inner border border-emerald-700/50"><User size={20} className="text-emerald-300" /></div>
+                <div className="overflow-hidden">
+                  <p className="font-bold text-sm capitalize truncate text-emerald-50">{currentRole === 'admin' ? 'Peneliti Utama' : testerInfo?.nama}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 truncate">Sesi Aktif ({currentRole})</p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                  <button onClick={() => { setCurrentRole(null); setActiveTab('dashboard'); }} className="w-full flex items-center justify-center gap-2 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500 hover:text-white py-2.5 rounded-xl transition-all duration-200 font-bold text-sm border border-emerald-500/30 shadow-sm">
+                    <RefreshCw size={16} /> {currentRole === 'admin' ? 'Keluar Dashboard Peneliti' : 'Ganti Role Akses'}
+                  </button>
+                  {currentRole !== 'admin' && (
+                      <button onClick={() => { setTesterInfo(null); setCurrentRole(null); setActiveTab('dashboard'); }} className="w-full flex items-center justify-center gap-2 bg-transparent text-emerald-400 hover:text-red-400 hover:bg-red-500/10 py-2 rounded-xl transition-all duration-200 font-bold text-xs">
+                        <LogOut size={14} /> Reset Setup Lembaga
+                      </button>
+                  )}
+                  {/* TOMBOL RESET KREDENSIAL: Hanya Muncul di Admin */}
+                  {currentRole === 'admin' && (
+                      <button onClick={() => { localStorage.removeItem('lpq_app_config'); window.location.reload(); }} className="w-full flex items-center justify-center gap-2 bg-transparent text-emerald-400 hover:text-red-400 hover:bg-red-500/10 py-2 rounded-xl transition-all duration-200 font-bold text-xs mt-2 border-t border-emerald-800 pt-3">
+                        <Key size={14} /> Hapus Kredensial & Reset Browser
+                      </button>
+                  )}
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT AREA */}
+          <main className="flex-1 p-4 md:p-6 lg:p-10 overflow-y-auto print:p-0 print:m-0 print:bg-white relative selection:bg-emerald-200 w-full">
+            {activeTab === 'admin-dashboard' && <AdminDashboardView localLogs={researchLogs} santriData={santriData} ustadzData={ustadzData} appConfig={appConfig} setAppConfig={setAppConfig} showToast={showToast} />}
+            {activeTab === 'ocr-santri' && <ExperimentEntryView targetType="santri" targetData={santriData} setTargetData={setSantriData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} appConfig={appConfig} />}
+            {activeTab === 'ocr-ustadz' && <ExperimentEntryView targetType="ustadz" targetData={ustadzData} setTargetData={setUstadzData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} appConfig={appConfig} />}
+            {activeTab === 'report' && <ResearchReportView researchLogs={researchLogs} showToast={showToast} />}
+            {activeTab === 'kuisioner' && <KuisionerView showToast={showToast} />}
+            {activeTab === 'request' && <RequestDocumentView ustadzData={ustadzData} dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
+            {activeTab === 'approval' && <ApprovalView dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
+            {activeTab === 'arsip' && <ArsipView dokumenReq={dokumenReq} testerInfo={testerInfo} />}
+            
+            {activeTab === 'dashboard' && (
+              <div className="flex flex-col items-center justify-center min-h-[70vh] text-center text-emerald-900/60 animate-fade-in max-w-2xl mx-auto px-2">
+                <div className="bg-emerald-100/50 p-5 md:p-6 rounded-3xl mb-4 md:mb-6 shadow-inner border border-emerald-50">
+                  {currentRole === 'admin' ? <LineChart size={56} className="text-emerald-600" /> : <BookOpen size={56} className="text-emerald-600" />}
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-2 md:mb-3">Selamat Datang di SIAKAD</h2>
+                <p className="text-sm md:text-base text-slate-500 leading-relaxed px-2">
+                  Prototipe ini dirancang untuk penelitian eksperimental fungsional perangkat lunak. Sistem menggunakan <b>Gemini AI</b> untuk mengekstrak data dari dokumen.
+                </p>
+                <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2 md:gap-3">
+                    <span className="px-3 md:px-4 py-1.5 md:py-2 bg-white shadow-sm border rounded-full text-[10px] md:text-xs font-bold text-slate-600 flex items-center gap-1.5"><ShieldCheck size={14} className="text-emerald-500"/> Privasi Terjamin</span>
+                    <span className="px-3 md:px-4 py-1.5 md:py-2 bg-white shadow-sm border rounded-full text-[10px] md:text-xs font-bold text-slate-600 flex items-center gap-1.5"><Timer size={14} className="text-blue-500"/> Akurasi Waktu</span>
+                    <span className="px-3 md:px-4 py-1.5 md:py-2 bg-white shadow-sm border rounded-full text-[10px] md:text-xs font-bold text-slate-600 flex items-center gap-1.5"><Database size={14} className="text-purple-500"/> AI Powered</span>
+                </div>
+              </div>
+            )}
+          </main>
+
+          <ToastNotification toast={toast} setToast={setToast} />
+        </div>
       );
     }
 
