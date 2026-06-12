@@ -754,7 +754,7 @@
             };
 
             // MENGGUNAKAN GEMINI 2.5 FLASH PREVIEW
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${appConfig.apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
             const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             
             const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -790,7 +790,7 @@
               };
 
               // MENGGUNAKAN GEMINI 2.5 FLASH PREVIEW
-              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${appConfig.apiKey}`;
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
               const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               
               const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -826,7 +826,7 @@
               };
 
               // MENGGUNAKAN GEMINI 2.5 FLASH PREVIEW
-              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${appConfig.apiKey}`;
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
               const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               
               const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
