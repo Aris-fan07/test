@@ -1,5 +1,5 @@
 // api/gemini.js - Vercel Serverless Function
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Hanya menerima metode POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
   try {
     // Meneruskan request ke Google Gemini API secara rahasia (Server-to-Server)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${appConfig.apiKey}, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body) // Mengirimkan payload image/text dari frontend  
