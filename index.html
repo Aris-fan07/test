@@ -72,6 +72,7 @@
       );
     }
 
+    // --- SETUP LEMBAGA AWAL & EASTER EGG ADMIN ---
     function WelcomeTesterScreen({ setTesterInfo, setRole, showToast }) {
       const [nama, setNama] = useState('');
       const [lembaga, setLembaga] = useState('');
@@ -117,15 +118,15 @@
               <div className="space-y-3 md:space-y-4">
                 <div>
                   <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Lengkap Penguji <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Ahmad Subagyo" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 md:focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium text-sm md:text-base" value={nama} onChange={(e) => setNama(e.target.value)} />
+                  <input type="text" required placeholder="Contoh: Ahmad Subagyo" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={nama} onChange={(e) => setNama(e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Lembaga <span className="text-slate-400 font-normal normal-case">(Tanpa TPQ/LPQ)</span> <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Miftahul Ulum" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 md:focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium text-sm md:text-base" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
+                  <input type="text" required placeholder="Contoh: Miftahul Ulum" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Kepala TPQ <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: K.H. Zainudin" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 md:focus:ring-4 focus:ring-emerald-500/10 outline-none transition font-medium text-sm md:text-base" value={namaKepala} onChange={(e) => setNamaKepala(e.target.value)} />
+                  <input type="text" required placeholder="Contoh: K.H. Zainudin" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={namaKepala} onChange={(e) => setNamaKepala(e.target.value)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
@@ -163,6 +164,7 @@
       );
     }
 
+    // --- PILIH ROLE AKSES ---
     function LoginScreen({ setRole, testerInfo }) {
       return (
         <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -201,11 +203,11 @@
       );
     }
 
+    // --- DASHBOARD ADMIN (TEMPAT SETUP API KEY) ---
     function AdminDashboardView({ localLogs, santriData, ustadzData, appConfig, setAppConfig, showToast }) {
       const [globalStats, setGlobalStats] = useState({ isLoading: true, totalPenguji: 0, totalEksperimen: 0, avgOcr: 0, avgImport: 0, avgManual: 0, isFallback: false });
       const [viewDataTab, setViewDataTab] = useState('santri');
 
-      // State untuk Setup API Key (Rahasia)
       const [apiInput, setApiInput] = useState(appConfig?.apiKey || '');
       const [gasInput, setGasInput] = useState(appConfig?.gasUrl || '');
       const [showKey, setShowKey] = useState(false);
@@ -242,7 +244,7 @@
         const newConfig = { apiKey: apiInput.trim(), gasUrl: gasInput.trim() };
         localStorage.setItem('lpq_app_config', JSON.stringify(newConfig));
         setAppConfig(newConfig);
-        showToast("Kredensial berhasil diamankan di browser ini.", "success");
+        showToast("Kredensial berhasil disimpan di memori browser.", "success");
       };
 
       return (
@@ -252,7 +254,6 @@
             <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Area khusus untuk Peneliti. Penguji lain tidak memiliki akses ke halaman ini.</p>
           </header>
 
-          {/* PANEL RAHASIA: SETUP KREDENSIAL */}
           <div className="bg-slate-900 rounded-2xl md:rounded-3xl shadow-xl border border-slate-800 overflow-hidden relative">
              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
              <div className="p-5 md:p-8 relative z-10">
@@ -260,16 +261,16 @@
                    <div className="bg-emerald-500/20 p-2.5 rounded-xl border border-emerald-500/30"><ShieldCheck className="text-emerald-400" size={24} /></div>
                    <div>
                       <h3 className="font-extrabold text-white text-lg">Konfigurasi Kredensial Sistem</h3>
-                      <p className="text-emerald-400/80 text-xs font-medium mt-0.5">Setup lokal ini hanya terlihat di Dashboard Admin.</p>
+                      <p className="text-emerald-400/80 text-xs font-medium mt-0.5">Dapatkan API Key Gratis di: <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-blue-400 underline">aistudio.google.com/app/apikey</a></p>
                    </div>
                 </div>
 
                 <form onSubmit={handleSaveConfig} className="space-y-4 md:space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div>
-                      <label className="block text-[10px] md:text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Gemini API Key (Wajib)</label>
+                      <label className="block text-[10px] md:text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Gemini API Key (AI Studio) <span className="text-red-500">*</span></label>
                       <div className="relative">
-                        <input type={showKey ? "text" : "password"} required placeholder="AIzaSy..." className="w-full bg-slate-800 border border-slate-700 text-white p-3.5 pr-12 rounded-xl focus:bg-slate-950 focus:border-emerald-500 outline-none transition font-mono text-sm" value={apiInput} onChange={(e) => setApiInput(e.target.value)} />
+                        <input type={showKey ? "text" : "password"} required placeholder="Ketik API Key (Contoh: AIza... atau AQ...)" className="w-full bg-slate-800 border border-slate-700 text-white p-3.5 pr-12 rounded-xl focus:bg-slate-950 focus:border-emerald-500 outline-none transition font-mono text-sm" value={apiInput} onChange={(e) => setApiInput(e.target.value)} />
                         <button type="button" onClick={() => setShowKey(!showKey)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white transition">
                           <i className={`fa-solid ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                         </button>
@@ -282,21 +283,11 @@
                     </div>
                   </div>
                   <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition-all text-sm md:text-base flex items-center justify-center gap-2 w-full md:w-auto">
-                    <CheckCircle size={18}/> Simpan & Terapkan Konfigurasi
+                    <CheckCircle size={18}/> Simpan Konfigurasi API
                   </button>
                 </form>
              </div>
           </div>
-
-          {globalStats.isFallback && (
-            <div className="bg-amber-50/50 border border-amber-200 p-4 md:p-5 rounded-xl md:rounded-2xl flex items-start gap-3 md:gap-4">
-              <div className="bg-amber-100 p-1.5 md:p-2 rounded-full"><AlertCircle className="text-amber-600 flex-shrink-0" size={18} /></div>
-              <div>
-                <p className="font-bold text-amber-900 text-xs md:text-sm">Mode Pratinjau Lokal (Aplikasi Berjalan Mandiri)</p>
-                <p className="text-[10px] md:text-xs text-amber-700 mt-1 leading-relaxed">Belum terhubung ke backend Eksternal/GAS karena URL Apps Script tidak diisi atau tidak merespons. Riwayat eksperimen sementara dicatat secara aman dalam memory browser lokal.</p>
-              </div>
-            </div>
-          )}
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-5">
             <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden">
@@ -352,88 +343,267 @@
                            <div className="w-full bg-slate-100 rounded-full h-4 md:h-6 p-0.5 md:p-1 shadow-inner"><div className="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgManual / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
                         </div>
                       )}
-                      <div className="mt-6 md:mt-10 pt-4 md:pt-6 border-t border-dashed border-slate-200 text-center text-xs md:text-sm font-bold text-slate-500 bg-slate-50 rounded-xl p-3 md:p-4">
-                         Bandingkan efisiensi fungsional antara metode <b>Otomatis AI</b> dan <b>Ketik Manual</b>.
-                      </div>
                    </div>
                 ) : (
                    <div className="text-center text-slate-400 p-4">
                      <FileSearch size={36} className="mx-auto mb-3 md:mb-4 opacity-50" />
                      <p className="font-semibold text-sm md:text-base">Belum ada data komparasi.</p>
-                     <p className="text-xs md:text-sm mt-1">Lakukan entri data minimal 1 kali.</p>
                    </div>
                 )}
              </div>
           </div>
+        </div>
+      );
+    }
 
-          <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 overflow-hidden mt-6 md:mt-8">
-             <div className="bg-slate-50/50 p-4 md:p-6 border-b border-slate-100 font-bold text-sm md:text-base text-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2 md:gap-3">
-                    <div className="bg-white p-1.5 md:p-2 rounded shadow-sm border"><Database size={16} className="text-slate-600" /></div> 
-                    Database Input Operator (Lokal)
+    // --- CASCADER ALAMAT LENGKAP ---
+    function AddressCascader({ formData, setFormData, prefix = '' }) {
+        const getField = (field) => prefix ? `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}` : field;
+
+        const [provinces, setProvinces] = useState([]);
+        const [regencies, setRegencies] = useState([]);
+        const [districts, setDistricts] = useState([]);
+        const [villages, setVillages] = useState([]);
+
+        useEffect(() => {
+            fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+                .then(res => res.json())
+                .then(setProvinces).catch(console.error);
+        }, []);
+
+        const handleChange = (e, level) => {
+            const name = e.target.value;
+            const id = e.target.selectedOptions?.[0]?.dataset?.id;
+            
+            if (level === 'provinsi') {
+                setFormData(prev => ({ ...prev, [getField('provinsi')]: name, [getField('kabupaten')]: '', [getField('kecamatan')]: '', [getField('desa')]: '' }));
+                if (id) fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${id}.json`).then(r => r.json()).then(setRegencies);
+                else setRegencies([]); setDistricts([]); setVillages([]);
+            } else if (level === 'kabupaten') {
+                setFormData(prev => ({ ...prev, [getField('kabupaten')]: name, [getField('kecamatan')]: '', [getField('desa')]: '' }));
+                if (id) fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${id}.json`).then(r => r.json()).then(setDistricts);
+                else setDistricts([]); setVillages([]);
+            } else if (level === 'kecamatan') {
+                setFormData(prev => ({ ...prev, [getField('kecamatan')]: name, [getField('desa')]: '' }));
+                if (id) fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${id}.json`).then(r => r.json()).then(setVillages);
+                else setVillages([]);
+            } else if (level === 'desa') {
+                setFormData(prev => ({ ...prev, [getField('desa')]: name }));
+            } else {
+                setFormData(prev => ({ ...prev, [getField(level)]: name }));
+            }
+        };
+
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-2">
+                <select value={formData[getField('provinsi')] || ''} onChange={(e) => handleChange(e, 'provinsi')} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm">
+                    <option value="">-- Pilih Provinsi --</option>
+                    {provinces.map(p => <option key={p.id} data-id={p.id} value={p.name}>{p.name}</option>)}
+                </select>
+                <select value={formData[getField('kabupaten')] || ''} onChange={(e) => handleChange(e, 'kabupaten')} disabled={!regencies.length} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm disabled:opacity-50 bg-slate-50">
+                    <option value="">-- Pilih Kab/Kota --</option>
+                    {regencies.map(r => <option key={r.id} data-id={r.id} value={r.name}>{r.name}</option>)}
+                </select>
+                <select value={formData[getField('kecamatan')] || ''} onChange={(e) => handleChange(e, 'kecamatan')} disabled={!districts.length} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm disabled:opacity-50 bg-slate-50">
+                    <option value="">-- Pilih Kecamatan --</option>
+                    {districts.map(d => <option key={d.id} data-id={d.id} value={d.name}>{d.name}</option>)}
+                </select>
+                <select value={formData[getField('desa')] || ''} onChange={(e) => handleChange(e, 'desa')} disabled={!villages.length} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm disabled:opacity-50 bg-slate-50">
+                    <option value="">-- Pilih Desa --</option>
+                    {villages.map(v => <option key={v.id} data-id={v.id} value={v.name}>{v.name}</option>)}
+                </select>
+                <div className="col-span-1 lg:col-span-1 flex gap-2">
+                  <input type="text" placeholder="RT" value={formData[getField('rt')] || ''} onChange={(e) => handleChange(e, 'rt')} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
+                  <input type="text" placeholder="RW" value={formData[getField('rw')] || ''} onChange={(e) => handleChange(e, 'rw')} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
                 </div>
-                <div className="flex bg-slate-200 p-1 rounded-lg w-full md:w-auto">
-                   <button onClick={() => setViewDataTab('santri')} className={`flex-1 md:flex-none px-4 py-2 md:py-1.5 text-xs font-bold rounded-md transition-all ${viewDataTab === 'santri' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500'}`}>Data Santri ({santriData.length})</button>
-                   <button onClick={() => setViewDataTab('ustadz')} className={`flex-1 md:flex-none px-4 py-2 md:py-1.5 text-xs font-bold rounded-md transition-all ${viewDataTab === 'ustadz' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500'}`}>Data Ustadz ({ustadzData.length})</button>
+                <input type="text" placeholder="Jalan / Gang / Dusun (Detail)" value={formData[getField('alamatLengkap')] || ''} onChange={(e) => handleChange(e, 'alamatLengkap')} className="col-span-1 md:col-span-2 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
+                <input type="text" placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={(e) => handleChange(e, 'kodePos')} className="col-span-1 lg:col-span-1 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
+            </div>
+        );
+    }
+
+    // --- FORM VERIFIKASI LENGKAP ---
+    function FormVerifikasi({ entryMethod, isSantri, formData, setFormData, handleSave, isProcessing }) {
+      const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+      
+      const jarakOptions = ['< 5 KM', '6 - 10 KM', '11 - 15 KM', '16 - 20 KM', '21 - 25 KM', '> 25 KM'];
+      const waktuTempuhOptions = ['< 10 Menit', '11 - 20 Menit', '21 - 30 Menit', '31 - 40 Menit', '41 - 50 Menit', '51 - 60 Menit', '> 60 Menit'];
+      const golDarahOptions = ['A', 'B', 'AB', 'O', 'Tidak Tahu'];
+      const pendapatanOptions = ['Tidak Berpenghasilan / Tidak Tahu', '< Rp 1.000.000', 'Rp 1.000.001 - Rp 2.000.000', 'Rp 2.000.001 - Rp 3.000.000', 'Rp 3.000.001 - Rp 4.000.000', 'Rp 4.000.001 - Rp 5.000.000', '> Rp 5.000.000'];
+
+      const renderDateInput = (name, label) => (
+        <div>
+           <label className="block text-[10px] md:text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label}</label>
+           <input type={entryMethod === 'manual' ? "date" : "text"} placeholder={entryMethod === 'manual' ? "" : "Sesuai Dokumen"} name={name} value={formData[name] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+        </div>
+      );
+
+      const renderInput = (name, label, placeholder = "") => (
+        <div>
+           <label className="block text-[10px] md:text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label}</label>
+           <input type="text" name={name} placeholder={placeholder} value={formData[name] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+        </div>
+      );
+
+      const renderSelect = (name, label, options) => (
+        <div>
+           <label className="block text-[10px] md:text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label}</label>
+           <select name={name} value={formData[name] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium">
+              <option value="">-- Pilih --</option>
+              {options.map(o => <option key={o} value={o}>{o}</option>)}
+           </select>
+        </div>
+      );
+
+      const renderAddressOCR = (prefix = '') => {
+        const getField = (field) => prefix ? `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}` : field;
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-2">
+                <input name={getField('provinsi')} placeholder="Provinsi" value={formData[getField('provinsi')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                <input name={getField('kabupaten')} placeholder="Kabupaten" value={formData[getField('kabupaten')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                <input name={getField('kecamatan')} placeholder="Kecamatan" value={formData[getField('kecamatan')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                <input name={getField('desa')} placeholder="Desa/Kelurahan" value={formData[getField('desa')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                <div className="col-span-1 lg:col-span-1 flex gap-2">
+                    <input name={getField('rt')} placeholder="RT" value={formData[getField('rt')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                    <input name={getField('rw')} placeholder="RW" value={formData[getField('rw')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
                 </div>
-             </div>
+                <input name={getField('alamatLengkap')} placeholder="Jalan / Dusun (Detail Lengkap)" value={formData[getField('alamatLengkap')] || ''} onChange={handleChange} className="col-span-1 md:col-span-2 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                <input name={getField('kodePos')} placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={handleChange} className="col-span-1 lg:col-span-1 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+            </div>
+        );
+      };
+
+      return (
+        <form onSubmit={handleSave} className="space-y-4 md:space-y-6 animate-fade-in w-full">
+          {formData.statusValidasi && (
+            <div className="bg-amber-50 p-3 md:p-4 border border-amber-200 text-amber-900 rounded-xl text-xs md:text-sm flex items-start gap-2 md:gap-3 shadow-inner">
+               <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" /> 
+               <div>
+                  <b className="block mb-0.5">Validasi Diperlukan</b>
+                  {formData.statusValidasi}
+               </div>
+            </div>
+          )}
+          
+          <div className="bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+             <h4 className="font-extrabold text-slate-700 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><User size={16}/> Data {isSantri ? 'Santri' : 'Ustadz'}</h4>
              
-             <div className="overflow-x-auto w-full max-h-[400px] custom-scrollbar">
-               <table className="w-full text-left text-xs text-slate-600 whitespace-nowrap">
-                 <thead className="bg-white border-b border-slate-100 uppercase text-[10px] font-extrabold tracking-widest text-slate-400 sticky top-0 z-10 shadow-sm">
-                   {viewDataTab === 'santri' ? (
-                     <tr>
-                       <th className="p-3 md:p-4">ID / NIK</th>
-                       <th className="p-3 md:p-4">Nama Lengkap</th>
-                       <th className="p-3 md:p-4">L/P</th>
-                       <th className="p-3 md:p-4">Tempat, Tgl Lahir</th>
-                       <th className="p-3 md:p-4">Alamat Domisili</th>
-                       <th className="p-3 md:p-4">Nama Ayah</th>
-                       <th className="p-3 md:p-4">Nama Ibu</th>
-                     </tr>
-                   ) : (
-                     <tr>
-                       <th className="p-3 md:p-4">ID / NIK</th>
-                       <th className="p-3 md:p-4">Nama Lengkap & Gelar</th>
-                       <th className="p-3 md:p-4">L/P</th>
-                       <th className="p-3 md:p-4">Tempat, Tgl Lahir</th>
-                       <th className="p-3 md:p-4">Alamat Domisili</th>
-                       <th className="p-3 md:p-4">Pekerjaan</th>
-                       <th className="p-3 md:p-4">Status Pernikahan</th>
-                     </tr>
-                   )}
-                 </thead>
-                 <tbody>
-                   {viewDataTab === 'santri' && santriData.length === 0 && <tr><td colSpan="7" className="text-center p-8 text-slate-400"><Database size={24} className="mx-auto mb-2 opacity-30"/>Belum ada entri data Santri.</td></tr>}
-                   {viewDataTab === 'santri' && santriData.map(d => (
-                     <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
-                       <td className="p-3 md:p-4"><p className="font-bold text-slate-700">{d.nik}</p><p className="text-[10px] text-emerald-600 font-mono font-bold mt-0.5">{d.id}</p></td>
-                       <td className="p-3 md:p-4 font-bold text-slate-800">{d.nama}</td>
-                       <td className="p-3 md:p-4 font-bold">{d.jenisKelamin === 'Laki-laki' ? 'L' : d.jenisKelamin === 'Perempuan' ? 'P' : '-'}</td>
-                       <td className="p-3 md:p-4">{d.tempatLahir}, {d.tglLahir}</td>
-                       <td className="p-3 md:p-4 truncate max-w-[200px]" title={d.alamat}>{d.alamat || '-'}</td>
-                       <td className="p-3 md:p-4 font-medium">{d.ayahNama || '-'}</td>
-                       <td className="p-3 md:p-4 font-medium">{d.ibuNama || '-'}</td>
-                     </tr>
-                   ))}
+             {isSantri ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    {renderInput('noKk', 'Nomor Kartu Keluarga (KK)', '16 Digit Angka')}
+                    {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit Angka')}
+                    {renderInput('nama', 'Nama Lengkap')}
+                    {renderInput('tempatLahir', 'Tempat Lahir')}
+                    {renderDateInput('tglLahir', 'Tanggal Lahir')}
+                    {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'])}
+                    {renderInput('agama', 'Agama (Sesuai KK)')}
+                 </div>
+             ) : (
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                    {renderInput('gelarDepan', 'Gelar Depan')}
+                    {renderInput('nama', 'Nama Lengkap (Tanpa Gelar)')}
+                    {renderInput('gelarBelakang', 'Gelar Belakang')}
+                    
+                    <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 border-t pt-4 border-slate-200">
+                        {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit Angka')}
+                        {renderInput('tempatLahir', 'Tempat Lahir')}
+                        {renderDateInput('tglLahir', 'Tanggal Lahir')}
+                        {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'])}
+                        {renderInput('agama', 'Agama (Sesuai KTP)')}
+                        {renderSelect('golonganDarah', 'Golongan Darah', golDarahOptions)}
+                        {renderInput('statusPernikahan', 'Status Pernikahan (Sesuai KTP)')}
+                        {renderInput('pekerjaan', 'Pekerjaan (Sesuai KTP)')}
+                    </div>
+                 </div>
+             )}
 
-                   {viewDataTab === 'ustadz' && ustadzData.length === 0 && <tr><td colSpan="7" className="text-center p-8 text-slate-400"><Database size={24} className="mx-auto mb-2 opacity-30"/>Belum ada entri data Ustadz.</td></tr>}
-                   {viewDataTab === 'ustadz' && ustadzData.map(d => (
-                     <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
-                       <td className="p-3 md:p-4"><p className="font-bold text-slate-700">{d.nik}</p><p className="text-[10px] text-blue-600 font-mono font-bold mt-0.5">{d.id}</p></td>
-                       <td className="p-3 md:p-4 font-bold text-slate-800">{d.nama}</td>
-                       <td className="p-3 md:p-4 font-bold">{d.jenisKelamin === 'Laki-laki' ? 'L' : d.jenisKelamin === 'Perempuan' ? 'P' : '-'}</td>
-                       <td className="p-3 md:p-4">{d.tempatLahir}, {d.tglLahir}</td>
-                       <td className="p-3 md:p-4 truncate max-w-[200px]" title={d.alamat}>{d.alamat || '-'}</td>
-                       <td className="p-3 md:p-4 font-medium">{d.pekerjaan || '-'}</td>
-                       <td className="p-3 md:p-4">{d.statusPernikahan || '-'}</td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
+             <div className="mt-5 md:mt-6 md:col-span-2">
+                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wide">Alamat & Detail Geografis</label>
+                 {entryMethod === 'manual' ? <AddressCascader formData={formData} setFormData={setFormData} /> : renderAddressOCR()}
+                 
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-4 bg-emerald-50/50 p-3 md:p-4 rounded-xl border border-emerald-100">
+                     {renderSelect('jarak', 'Jarak Rumah', jarakOptions)}
+                     {renderSelect('transportasi', 'Fasilitas Transportasi', ['Jalan Kaki', 'Sepeda', 'Diantar Motor', 'Kendaraan Pribadi', 'Angkutan Umum', 'Lainnya'])}
+                     {renderSelect('waktuTempuh', 'Waktu Tempuh', waktuTempuhOptions)}
+                 </div>
              </div>
           </div>
-        </div>
+
+          {isSantri && (
+              <div className="space-y-4 md:space-y-6">
+                  <div className="bg-blue-50/50 p-4 md:p-6 rounded-2xl border border-blue-100 shadow-sm">
+                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-5 gap-2">
+                         <h4 className="font-extrabold text-blue-800 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Data Ayah</h4>
+                         <select name="statusAyah" value={formData.statusAyah || 'Hidup'} onChange={handleChange} className="text-[10px] md:text-xs font-bold border-2 border-blue-200 rounded p-1.5 md:p-2 outline-none bg-white text-blue-800 w-full md:w-auto">
+                             <option value="Hidup">Hidup (Sesuai KK)</option><option value="Meninggal">Meninggal / Tidak Diketahui</option>
+                         </select>
+                     </div>
+                     {formData.statusAyah === 'Hidup' ? (
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            {renderInput('ayahNik', 'NIK Ayah')}
+                            {renderInput('ayahNama', 'Nama Ayah')}
+                            {renderInput('ayahTempatLahir', 'Tempat Lahir Ayah')}
+                            {renderDateInput('ayahTglLahir', 'Tanggal Lahir Ayah')}
+                            {renderInput('ayahPekerjaan', 'Pekerjaan Ayah')}
+                            {renderSelect('ayahEstimasiGaji', 'Estimasi Pendapatan', pendapatanOptions)}
+                         </div>
+                     ) : (
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            {renderInput('ayahNama', 'Nama Ayah (Almarhum)')}
+                         </div>
+                     )}
+                  </div>
+
+                  <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm">
+                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-5 gap-2">
+                         <h4 className="font-extrabold text-pink-800 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Data Ibu</h4>
+                         <select name="statusIbu" value={formData.statusIbu || 'Hidup'} onChange={handleChange} className="text-[10px] md:text-xs font-bold border-2 border-pink-200 rounded p-1.5 md:p-2 outline-none bg-white text-pink-800 w-full md:w-auto">
+                             <option value="Hidup">Hidup (Sesuai KK)</option><option value="Meninggal">Meninggal / Tidak Diketahui</option>
+                         </select>
+                     </div>
+                     {formData.statusIbu === 'Hidup' ? (
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            {renderInput('ibuNik', 'NIK Ibu')}
+                            {renderInput('ibuNama', 'Nama Ibu')}
+                            {renderInput('ibuTempatLahir', 'Tempat Lahir Ibu')}
+                            {renderDateInput('ibuTglLahir', 'Tanggal Lahir Ibu')}
+                            {renderInput('ibuPekerjaan', 'Pekerjaan Ibu')}
+                            {renderSelect('ibuEstimasiGaji', 'Estimasi Pendapatan', pendapatanOptions)}
+                         </div>
+                     ) : (
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            {renderInput('ibuNama', 'Nama Ibu (Almarhumah)')}
+                         </div>
+                     )}
+                  </div>
+
+                  {formData.statusAyah === 'Meninggal' && formData.statusIbu === 'Meninggal' && (
+                      <div className="bg-amber-50 p-4 md:p-6 rounded-2xl border border-amber-200 shadow-sm">
+                         <h4 className="font-extrabold text-amber-900 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Data Wali (Jika Orang Tua Tidak Ada)</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            {renderInput('waliNama', 'Nama Wali')}
+                            {renderInput('waliHubungan', 'Hubungan dengan Santri', 'Contoh: Kakek, Paman')}
+                         </div>
+                      </div>
+                  )}
+              </div>
+          )}
+
+          {!isSantri && (
+              <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm">
+                 <h4 className="font-extrabold text-pink-800 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Informasi Ibu Kandung</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                    {renderInput('ibuNama', 'Nama Ibu')}
+                    {renderInput('ibuStatusPernikahan', 'Status Pernikahan Ibu', 'Contoh: Cerai Mati')}
+                    {renderInput('ibuNoKk', 'Nomor KK Ibu')}
+                 </div>
+              </div>
+          )}
+          
+          <button type="submit" disabled={isProcessing} className="w-full bg-emerald-700 text-white py-3 md:py-4 rounded-xl font-bold mt-6 md:mt-8 shadow-lg shadow-emerald-700/30 hover:bg-emerald-800 hover:-translate-y-1 transition-all disabled:opacity-70 flex justify-center items-center gap-2 text-sm md:text-base">
+            {isProcessing ? <RefreshCw className="animate-spin" size={18}/> : <CheckCircle size={18} />} Selesaikan Sesi & Simpan Metrik
+          </button>
+        </form>
       );
     }
 
@@ -454,7 +624,6 @@
       const [rawFile, setRawFile] = useState(null);
       const [filePreview, setFilePreview] = useState(null);
       const [isExtracting, setIsExtracting] = useState(false);
-      const [ocrStatus, setOcrStatus] = useState('');
 
       const emptyFormSantri = { 
           nik: '', noKk: '', nama: '', tempatLahir: '', tglLahir: '', jenisKelamin: '', agama: '',
@@ -539,18 +708,24 @@
           });
       };
 
+      // PERBAIKAN PENANGANAN ERROR API DI SINI
       const fetchWithRetry = async (url, options, retries = 3) => {
         const delays = [1000, 2000, 4000];
         for (let i = 0; i < retries; i++) {
             try {
                 const response = await fetch(url, options);
                 const json = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error(json.error?.message || `HTTP ${response.status}`);
+                    // Cek error spesifik (401 / 403 / 404)
+                    if (response.status === 401 || response.status === 403 || json.error?.message?.includes('not found') || json.error?.message?.includes('API key not valid')) {
+                        throw new Error("API Key Ditolak! Harap buat API Key baru dari Google AI Studio (aistudio.google.com) lalu simpan di Dashboard Admin.");
+                    }
+                    throw new Error(json.error?.message || `HTTP Error ${response.status}`);
                 }
                 return json;
             } catch (e) {
-                if (i === retries - 1) throw e;
+                if (i === retries - 1 || e.message.includes("Google AI Studio")) throw e; // Jangan retry jika sudah jelas error API Key
                 await new Promise(res => setTimeout(res, delays[i]));
             }
         }
@@ -558,7 +733,7 @@
 
       const checkApiReady = () => {
         if (!appConfig?.apiKey) {
-            showToast("API Key belum dikonfigurasi. Peneliti harus masuk ke Menu Admin untuk mengatur kunci API.", "error");
+            showToast("API Key belum disetting. Peneliti harus masuk ke Dashboard Admin (Klik logo papan dada 7x di awal) untuk memasukkan kunci API.", "error");
             return false;
         }
         return true;
@@ -567,7 +742,7 @@
       const runGeminiOCRSantriKK = async () => {
         if (!checkApiReady()) return;
         if (!rawFile) return showToast("Pilih gambar KK terlebih dahulu!", "error");
-        setIsExtracting(true); setOcrStatus('Menganalisis KK via Gemini...');
+        setIsExtracting(true);
         
         try {
             const imageData = await processImageForOCR(rawFile);
@@ -578,7 +753,8 @@
                 generationConfig: { responseMimeType: "application/json" }
             };
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appConfig.apiKey}`;
+            // MENGGUNAKAN GEMINI 2.5 FLASH PREVIEW
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${appConfig.apiKey}`;
             const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             
             const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -593,16 +769,16 @@
             }
         } catch (error) {
             console.error("OCR Error:", error);
-            showToast(`Gagal: ${error.message}`, "error");
+            showToast(`Gagal: ${error.message}`, "error"); 
         } finally {
-            setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null);
+            setIsExtracting(false); setRawFile(null); setFilePreview(null);
         }
       };
 
       const runGeminiOCRUstadzKTP = async () => {
           if (!checkApiReady()) return;
           if (!rawFile) return showToast("Pilih gambar KTP terlebih dahulu!", "error");
-          setIsExtracting(true); setOcrStatus('Menganalisis KTP via Gemini...');
+          setIsExtracting(true);
           
           try {
               const imageData = await processImageForOCR(rawFile);
@@ -613,7 +789,8 @@
                   generationConfig: { responseMimeType: "application/json" }
               };
 
-              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appConfig.apiKey}`;
+              // MENGGUNAKAN GEMINI 2.5 FLASH PREVIEW
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${appConfig.apiKey}`;
               const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               
               const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -630,14 +807,14 @@
               console.error("OCR Error:", error);
               showToast(`Gagal: ${error.message}`, "error"); 
           } finally { 
-              setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null); 
+              setIsExtracting(false); setRawFile(null); setFilePreview(null); 
           }
       };
 
       const runGeminiOCRUstadzKK = async () => {
           if (!checkApiReady()) return;
           if (!rawFile) return showToast("Pilih gambar KK terlebih dahulu!", "error");
-          setIsExtracting(true); setOcrStatus('Mencari Data Ibu via Gemini...');
+          setIsExtracting(true);
           
           try {
               const imageData = await processImageForOCR(rawFile);
@@ -648,7 +825,8 @@
                   generationConfig: { responseMimeType: "application/json" }
               };
 
-              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appConfig.apiKey}`;
+              // MENGGUNAKAN GEMINI 2.5 FLASH PREVIEW
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${appConfig.apiKey}`;
               const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               
               const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -665,7 +843,7 @@
               console.error("OCR Error:", error);
               showToast(`Gagal: ${error.message}`, "error"); 
           } finally { 
-              setIsExtracting(false); setOcrStatus(''); setRawFile(null); setFilePreview(null); 
+              setIsExtracting(false); setRawFile(null); setFilePreview(null); 
           }
       };
 
@@ -770,7 +948,12 @@
                   </button>
                 </div>
               )}
-              {ocrStep === 'FORM' && <div className="p-3 md:p-6 pt-0 md:pt-2"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>}
+              
+              {ocrStep === 'FORM' && (
+                  <div className="p-3 md:p-6 pt-0 md:pt-2">
+                     <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
+                  </div>
+              )}
             </div>
           )}
 
@@ -825,17 +1008,180 @@
                 </div>
               )}
 
-              {ocrStep === 'FORM' && <div className="p-3 md:p-6 pt-0 md:pt-2"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>}
+              {ocrStep === 'FORM' && (
+                  <div className="p-3 md:p-6 pt-0 md:pt-2">
+                     <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
+                  </div>
+              )}
             </div>
           )}
 
           {isTimerRunning && entryMethod === 'manual' && (
             <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 animate-fade-in relative overflow-hidden w-full">
               <h3 className="font-extrabold text-lg md:text-2xl mb-4 md:mb-6 text-slate-800 flex items-center gap-2 md:gap-3 relative z-10"><div className="bg-slate-200 p-1.5 md:p-2 rounded-xl text-slate-700"><User size={20}/></div> Formulir Konvensional</h3>
-              <div className="relative z-10"><FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} /></div>
+              <div className="relative z-10">
+                 <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
+              </div>
             </div>
           )}
         </div>
+      );
+    }
+
+    // --- FITUR LAPORAN, KUESIONER, PENGAJUAN, DLL (FULL LENGKAP) ---
+    function ResearchReportView({ researchLogs, showToast }) {
+      const handleDownload = () => {
+        if(researchLogs.length === 0) return showToast("Belum ada data untuk diunduh.", "error");
+        try {
+            const ws = XLSX.utils.json_to_sheet(researchLogs);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Log_Eksperimen");
+            XLSX.writeFile(wb, `Laporan_Metrik_${new Date().getTime()}.xlsx`);
+            showToast("Laporan berhasil diunduh!", "success");
+        } catch (error) {
+            showToast("Gagal mengunduh file Excel.", "error");
+        }
+      };
+
+      return (
+        <div className="animate-fade-in max-w-5xl mx-auto space-y-4 md:space-y-6">
+          <header className="mb-4 md:mb-6 border-b border-slate-200 pb-3 md:pb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-4">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 flex items-center gap-2 md:gap-3">
+                <div className="bg-blue-100 p-1.5 md:p-2 rounded-xl text-blue-600"><BarChart size={24}/></div>
+                Laporan Metrik Sesi
+              </h2>
+              <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Riwayat waktu entri data yang telah dilakukan.</p>
+            </div>
+            <button onClick={handleDownload} disabled={researchLogs.length === 0} className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition disabled:opacity-50">
+              <Download size={16}/> Unduh Excel
+            </button>
+          </header>
+
+          <div className="bg-white rounded-xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden w-full">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left text-xs md:text-sm text-slate-600 whitespace-nowrap md:whitespace-normal">
+                <thead className="bg-slate-50 border-b border-slate-100 uppercase text-[9px] md:text-[10px] font-extrabold tracking-widest text-slate-400">
+                  <tr>
+                    <th className="p-3 md:p-5">ID Log</th>
+                    <th className="p-3 md:p-5">Target Data</th>
+                    <th className="p-3 md:p-5">Metode Entri</th>
+                    <th className="p-3 md:p-5">Waktu Tempuh</th>
+                    <th className="p-3 md:p-5">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {researchLogs.map(log => (
+                    <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
+                      <td className="p-3 md:p-5 font-mono font-bold text-slate-700">{log.id}</td>
+                      <td className="p-3 md:p-5 font-bold text-slate-800">{log.target}</td>
+                      <td className="p-3 md:p-5">
+                        <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold border ${log.method.includes('OCR') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
+                          {log.method}
+                        </span>
+                      </td>
+                      <td className="p-3 md:p-5 font-black text-slate-800 text-sm md:text-lg">{log.duration} <span className="text-[10px] md:text-xs text-slate-400 font-medium">detik</span></td>
+                      <td className="p-3 md:p-5 text-slate-500 font-medium text-[10px] md:text-sm">{log.timestamp}</td>
+                    </tr>
+                  ))}
+                  {researchLogs.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="text-center p-10 md:p-16">
+                        <Timer size={36} className="mx-auto text-slate-300 mb-3"/>
+                        <p className="text-slate-400 font-medium text-sm md:text-lg">Belum ada eksperimen.</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function KuisionerView({ showToast }) {
+      const [submitted, setSubmitted] = useState(false);
+
+      const handleSubmit = (e) => {
+          e.preventDefault();
+          setSubmitted(true);
+          showToast("Terima kasih, kuisioner evaluasi telah disimpan!", "success");
+      };
+
+      if (submitted) {
+          return (
+              <div className="bg-white p-8 md:p-12 rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100 text-center animate-fade-in max-w-2xl mx-auto mt-6 md:mt-10">
+                  <div className="w-16 h-16 md:w-24 md:h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                      <CheckCircle size={36} />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-2 md:mb-3">Evaluasi Selesai</h2>
+                  <p className="text-sm md:text-lg text-slate-500 leading-relaxed px-2">
+                      Terima kasih atas penilaian Anda. Feedback ini akan digunakan untuk melengkapi data eksperimen.
+                  </p>
+              </div>
+          );
+      }
+
+      return (
+          <div className="max-w-3xl mx-auto animate-fade-in pb-10">
+              <header className="mb-6 md:mb-8 border-b border-slate-200 pb-4 md:pb-6">
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 flex items-center gap-2 md:gap-3">
+                      <div className="bg-purple-100 text-purple-600 p-1.5 md:p-2 rounded-xl"><MessageSquare size={24}/></div> 
+                      Kuisioner Evaluasi
+                  </h2>
+                  <p className="text-xs md:text-lg text-slate-500 mt-2 md:mt-3 font-medium leading-relaxed">
+                      Silakan berikan penilaian subjektif Anda sebagai penguji setelah mencoba fitur fungsional aplikasi.
+                  </p>
+              </header>
+
+              <form onSubmit={handleSubmit} className="bg-white p-5 md:p-10 rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-200 space-y-6 md:space-y-8">
+                  <div className="space-y-3 md:space-y-4">
+                      <label className="font-extrabold text-sm md:text-lg text-slate-800 block">1. Bagaimana tingkat <span className="text-emerald-600">kecepatan</span> ekstraksi data otomatis vs manual?</label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+                          {['Sangat Jauh Lebih Cepat', 'Sedikit Lebih Cepat', 'Sama Saja', 'Lebih Lambat'].map(opt => (
+                              <label key={opt} className="flex items-center gap-3 p-3 md:p-4 border-2 border-slate-100 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer transition">
+                                  <input type="radio" name="q1" required className="w-4 h-4 md:w-5 md:h-5 text-emerald-600 accent-emerald-600" value={opt} /> 
+                                  <span className="font-semibold text-slate-700 text-xs md:text-base">{opt}</span>
+                              </label>
+                          ))}
+                      </div>
+                  </div>
+
+                  <div className="space-y-3 md:space-y-4">
+                      <label className="font-extrabold text-sm md:text-lg text-slate-800 block">2. Bagaimana tingkat <span className="text-blue-600">akurasi</span> teks hasil tangkapan AI?</label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+                          {['Sangat Akurat (Tanpa Salah Cetak)', 'Cukup Akurat (Perlu Sedikit Koreksi)', 'Kurang Akurat (Banyak Typo)', 'Sangat Buruk'].map(opt => (
+                              <label key={opt} className="flex items-center gap-3 p-3 md:p-4 border-2 border-slate-100 rounded-xl hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition">
+                                  <input type="radio" name="q2" required className="w-4 h-4 md:w-5 md:h-5 accent-blue-600" value={opt} /> 
+                                  <span className="font-semibold text-slate-700 text-xs md:text-base">{opt}</span>
+                              </label>
+                          ))}
+                      </div>
+                  </div>
+
+                  <div className="space-y-3 md:space-y-4">
+                      <label className="font-extrabold text-sm md:text-lg text-slate-800 block">3. Apakah fitur fungsional ini <span className="text-purple-600">membantu</span> pekerjaan administrasi?</label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+                          {['Sangat Membantu', 'Cukup Membantu', 'Biasa Saja', 'Tidak Membantu'].map(opt => (
+                              <label key={opt} className="flex items-center gap-3 p-3 md:p-4 border-2 border-slate-100 rounded-xl hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition">
+                                  <input type="radio" name="q3" required className="w-4 h-4 md:w-5 md:h-5 accent-purple-600" value={opt} /> 
+                                  <span className="font-semibold text-slate-700 text-xs md:text-base">{opt}</span>
+                              </label>
+                          ))}
+                      </div>
+                  </div>
+                  
+                  <div className="space-y-3 md:space-y-4">
+                      <label className="font-extrabold text-sm md:text-lg text-slate-800 block">Kritik & Saran Tambahan (Opsional)</label>
+                      <textarea className="w-full bg-slate-50 border-2 border-slate-200 p-3 md:p-4 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition resize-none h-20 md:h-24 text-sm md:text-base" placeholder="Ketik jawaban Anda di sini..."></textarea>
+                  </div>
+
+                  <button type="submit" className="w-full bg-slate-800 text-white py-4 md:py-5 rounded-xl md:rounded-2xl font-bold hover:bg-slate-900 transition text-sm md:text-lg shadow-lg">
+                      Kirim & Simpan Penilaian
+                  </button>
+              </form>
+          </div>
       );
     }
 
@@ -1025,56 +1371,7 @@
       );
     }
 
-    function PublicVerificationScreen({ onBack, dokumenReq }) {
-      const [searchInput, setSearchInput] = useState('');
-      const [result, setResult] = useState(null); 
-      const [docData, setDocData] = useState(null);
-
-      const handleVerify = (e) => {
-        e.preventDefault();
-        const foundDoc = dokumenReq.find(d => d.docId === searchInput.trim().toUpperCase() && d.status === 'Disetujui');
-        if (foundDoc) { setDocData(foundDoc); setResult('found'); } 
-        else { setDocData(null); setResult('not_found'); }
-      };
-
-      return (
-        <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] relative">
-          <div className="absolute top-0 right-0 w-64 md:w-96 h-64 md:h-96 bg-blue-600/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-
-          <div className="w-full max-w-lg relative z-10 my-4">
-            <button onClick={onBack} className="text-white text-sm md:text-base font-bold mb-4 md:mb-6 flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 md:px-5 md:py-2.5 rounded-xl border border-white/20 backdrop-blur-sm transition">Kembali ke Beranda</button>
-            <div className="bg-white p-6 md:p-10 rounded-2xl md:rounded-[2rem] shadow-2xl border-t-8 border-t-blue-500 text-center">
-              <div className="bg-blue-100 w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 md:mb-6"><QrCode className="text-blue-600" size={32} /></div>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-2 tracking-tight">Verifikasi Publik QR</h2>
-              <p className="text-xs md:text-sm text-slate-500 font-medium mb-6 md:mb-8 px-2">Masukkan ID Dokumen yang tertera di bawah QR Code Surat.</p>
-              
-              <form onSubmit={handleVerify} className="mb-6 md:mb-8 relative flex flex-col md:block gap-3">
-                <input type="text" placeholder="ID DOKUMEN" className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl md:rounded-2xl py-3 md:py-4 px-4 md:pl-5 md:pr-32 text-lg md:text-xl font-mono uppercase font-black text-center text-slate-800 focus:border-blue-500 outline-none transition" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-                <button type="submit" className="w-full md:w-auto md:absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white py-3 md:py-0 px-6 rounded-xl font-bold transition shadow-md shadow-blue-600/30 flex justify-center items-center"><Search size={20}/></button>
-              </form>
-
-              {result === 'not_found' && (
-                <div className="bg-red-50 text-red-800 p-4 md:p-6 rounded-xl md:rounded-2xl border border-red-200 animate-fade-in text-left flex gap-3 md:gap-4 items-start">
-                  <div className="bg-red-200 p-1.5 md:p-2 rounded-full flex-shrink-0"><X className="text-red-600" size={20} /></div>
-                  <div><p className="font-black text-base md:text-lg leading-none mb-1 text-red-900">TIDAK VALID</p><p className="text-xs md:text-sm font-medium">Sistem tidak menemukan rekam jejak ID tersebut.</p></div>
-                </div>
-              )}
-              {result === 'found' && docData && (
-                <div className="bg-emerald-50 text-emerald-900 p-4 md:p-6 rounded-xl md:rounded-2xl border border-emerald-200 animate-fade-in text-left">
-                  <div className="flex items-center gap-2 md:gap-3 border-b border-emerald-200/60 pb-3 md:pb-4 mb-3 md:mb-4"><div className="bg-emerald-500 text-white p-1 md:p-1.5 rounded-full"><CheckCircle size={16} /></div><span className="font-black text-lg md:text-xl tracking-wide text-emerald-800">ASLI & SAH</span></div>
-                  <div className="space-y-3 md:space-y-4">
-                    <div><p className="text-[9px] md:text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">ID Terdaftar</p><p className="font-mono font-bold text-emerald-900 bg-white px-2 py-1 md:px-3 md:py-1.5 rounded-md md:rounded-lg border border-emerald-100 inline-block text-xs md:text-sm">{docData.docId}</p></div>
-                    <div><p className="text-[9px] md:text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Diterbitkan Atas Nama</p><p className="font-black text-base md:text-lg text-emerald-950 uppercase">{docData.nama}</p></div>
-                    <div><p className="text-[9px] md:text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Klasifikasi Surat Resmi</p><p className="font-bold text-emerald-800 text-xs md:text-sm">{docData.jenis}</p></div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
+    // --- SIDEBAR UTAMA ---
     function SidebarItem({ icon, label, active, onClick }) {
       return (
         <button onClick={onClick} className={`w-full flex items-center gap-3 md:gap-4 px-4 py-3 md:px-5 md:py-3.5 rounded-xl md:rounded-2xl transition-all duration-300 font-bold text-xs md:text-sm ${active ? 'bg-emerald-50 text-emerald-800 shadow-md transform translate-x-2' : 'text-emerald-100 hover:bg-emerald-800/50 hover:text-white'}`}>
@@ -1083,8 +1380,8 @@
       );
     }
 
+    // --- FUNGSI UTAMA APP ---
     function App() {
-      // 1. Cek apakah ada konfigurasi di LocalStorage (Jika tidak ada, default kosongan tanpa memblokir UI)
       const [appConfig, setAppConfig] = useState(() => {
         const saved = localStorage.getItem('lpq_app_config');
         return saved ? JSON.parse(saved) : { apiKey: '', gasUrl: '' };
@@ -1116,8 +1413,6 @@
         setIsMobileMenuOpen(false);
       };
 
-      // 2. ALUR APLIKASI
-      
       if (!testerInfo && currentRole !== 'admin' && currentRole !== 'public') {
         return (
           <React.Fragment>
@@ -1135,20 +1430,9 @@
           </React.Fragment>
         );
       }
-
-      if (currentRole === 'public') {
-        return (
-          <React.Fragment>
-            <PublicVerificationScreen onBack={() => { setCurrentRole(null); setActiveTab('dashboard'); }} dokumenReq={dokumenReq} />
-            <ToastNotification toast={toast} setToast={setToast} />
-          </React.Fragment>
-        );
-      }
       
       return (
         <div className="min-h-screen flex flex-col md:flex-row font-sans bg-[#F8FAFC]">
-          
-          {/* HEADER MOBILE */}
           <div className="md:hidden bg-emerald-900 text-white p-4 flex justify-between items-center shadow-md relative z-40 mobile-header">
              <div className="flex items-center gap-3">
                <div className="bg-white p-1 rounded-lg w-8 h-8 flex justify-center items-center overflow-hidden">
@@ -1164,12 +1448,10 @@
              </button>
           </div>
 
-          {/* OVERLAY MOBILE MENU */}
           {isMobileMenuOpen && (
               <div className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
           )}
 
-          {/* SIDEBAR */}
           <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 fixed md:sticky top-0 left-0 h-[100dvh] w-[280px] md:w-72 bg-emerald-900 text-white flex flex-col shadow-2xl z-50 print:hidden overflow-hidden`}>
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-800 rounded-full blur-3xl opacity-50 -translate-y-10 translate-x-10 pointer-events-none"></div>
             
@@ -1234,7 +1516,6 @@
                         <LogOut size={14} /> Reset Setup Lembaga
                       </button>
                   )}
-                  {/* TOMBOL RESET KREDENSIAL: Hanya Muncul di Admin */}
                   {currentRole === 'admin' && (
                       <button onClick={() => { localStorage.removeItem('lpq_app_config'); window.location.reload(); }} className="w-full flex items-center justify-center gap-2 bg-transparent text-emerald-400 hover:text-red-400 hover:bg-red-500/10 py-2 rounded-xl transition-all duration-200 font-bold text-xs mt-2 border-t border-emerald-800 pt-3">
                         <Key size={14} /> Hapus Kredensial & Reset Browser
@@ -1244,7 +1525,6 @@
             </div>
           </aside>
 
-          {/* MAIN CONTENT AREA */}
           <main className="flex-1 p-4 md:p-6 lg:p-10 overflow-y-auto print:p-0 print:m-0 print:bg-white relative selection:bg-emerald-200 w-full">
             {activeTab === 'admin-dashboard' && <AdminDashboardView localLogs={researchLogs} santriData={santriData} ustadzData={ustadzData} appConfig={appConfig} setAppConfig={setAppConfig} showToast={showToast} />}
             {activeTab === 'ocr-santri' && <ExperimentEntryView targetType="santri" targetData={santriData} setTargetData={setSantriData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} appConfig={appConfig} />}
