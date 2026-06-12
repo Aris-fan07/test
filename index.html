@@ -264,15 +264,41 @@
       )
     }
 
-    // Menampilkan statistik berdasarkan GLOBAL_RESEARCH_LOGS
+    // Menampilkan statistik berdasarkan Spreadsheet GAS
     function AdminDashboardView({ showToast }) {
       const [globalStats, setGlobalStats] = useState({ isLoading: true, totalPenguji: 0, totalEksperimen: 0, avgOcr: 0, avgImport: 0, avgManual: 0 });
 
       useEffect(() => {
-        const fetchGlobalData = () => {
-            // Menggunakan LocalStorage Global sebagai simulasi backend
+        const fetchGlobalData = async () => {
+            try {
+                // Menembak backend GAS untuk mengambil data statistik global dari Spreadsheet
+                const response = await fetch('/api/gas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_stats' })
+                });
+                
+                if (!response.ok) throw new Error("Gagal terhubung ke proxy");
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    setGlobalStats({ 
+                        isLoading: false, 
+                        totalPenguji: result.data.totalPenguji, 
+                        totalEksperimen: result.data.totalEksperimen, 
+                        avgOcr: result.data.avgOcr, 
+                        avgImport: result.data.avgImport || 0, 
+                        avgManual: result.data.avgManual 
+                    });
+                    return; // Jika sukses, hentikan eksekusi di sini
+                }
+            } catch (error) {
+                console.warn("Gagal mengambil dari spreadsheet, menggunakan fallback lokal:", error);
+            }
+
+            // Fallback (Cadangan): Jika backend gagal/belum siap, tetap gunakan LocalStorage
             const logs = JSON.parse(localStorage.getItem('GLOBAL_RESEARCH_LOGS') || '[]');
-            
             const uniqueTesters = new Set(logs.map(l => l.tester)).size;
             const ocrLogs = logs.filter(l => l.method === 'OCR Gemini AI');
             const importLogs = logs.filter(l => l.method === 'Import Excel/CSV');
