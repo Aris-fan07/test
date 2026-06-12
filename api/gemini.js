@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
   try {
     // Meneruskan request ke Google Gemini API secara rahasia (Server-to-Server)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${appConfig.apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${appConfig.apiKey}, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body) // Mengirimkan payload image/text dari frontend  
