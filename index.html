@@ -1705,10 +1705,10 @@
             {activeTab === 'ocr-santri' && <ExperimentEntryView targetType="santri" targetData={santriData} setTargetData={setSantriData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
             {activeTab === 'ocr-ustadz' && <ExperimentEntryView targetType="ustadz" targetData={ustadzData} setTargetData={setUstadzData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
             {activeTab === 'report' && <ResearchReportView researchLogs={researchLogs} showToast={showToast} />}
-            {activeTab === 'kuisioner' && <KuisionerView testerInfo={testerInfo} showToast={showToast} />}
             {activeTab === 'request' && <RequestDocumentView ustadzData={ustadzData} dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
             {activeTab === 'approval' && <ApprovalView dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
             {activeTab === 'arsip' && <ArsipView dokumenReq={dokumenReq} testerInfo={testerInfo} />}
+            {activeTab === 'kuisioner' && <KuisionerView testerInfo={testerInfo} showToast={showToast} />}
             
             {activeTab === 'dashboard' && (
               <div className="flex flex-col items-center justify-center min-h-[70vh] text-center text-emerald-900/60 animate-fade-in max-w-2xl mx-auto px-2">
