@@ -1653,7 +1653,11 @@
                   <SidebarItem icon={<Users />} label="Simulasi Entri Santri" active={activeTab === 'ocr-santri'} onClick={() => handleTabChange('ocr-santri')} />
                   <SidebarItem icon={<UserCheck />} label="Simulasi Entri Ustadz" active={activeTab === 'ocr-ustadz'} onClick={() => handleTabChange('ocr-ustadz')} />
                   <SidebarItem icon={<BarChart />} label="Laporan Metrik" active={activeTab === 'report'} onClick={() => handleTabChange('report')} />
-                  
+
+                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Modul Administrasi</p>
+                  <SidebarItem icon={<FileText />} label="Pengajuan Surat" active={activeTab === 'request'} onClick={() => handleTabChange('request')} />
+                  <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Dokumen" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
+
                   <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Evaluasi Data Bab 4</p>
                   <SidebarItem 
                       icon={isKuisionerUnlocked ? <MessageSquare /> : <Lock />} 
@@ -1664,10 +1668,6 @@
                           else showToast("Selesaikan minimal 1x OCR Santri, 1x OCR Ustadz, dan 1x Manual untuk membuka!", "error");
                       }} 
                   />
-
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Modul Administrasi</p>
-                  <SidebarItem icon={<FileText />} label="Pengajuan Surat" active={activeTab === 'request'} onClick={() => handleTabChange('request')} />
-                  <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Dokumen" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
                 </React.Fragment>
               )}
               {currentRole === 'kepala' && (
