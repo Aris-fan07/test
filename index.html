@@ -267,6 +267,7 @@
     // Menampilkan statistik berdasarkan Spreadsheet GAS
     function AdminDashboardView({ showToast }) {
       const [globalStats, setGlobalStats] = useState({ isLoading: true, totalPenguji: 0, totalEksperimen: 0, avgOcr: 0, avgImport: 0, avgManual: 0 });
+      const [isGlobal, setIsGlobal] = useState(false);
 
       useEffect(() => {
         const fetchGlobalData = async () => {
@@ -278,7 +279,7 @@
                     body: JSON.stringify({ action: 'get_stats' })
                 });
                 
-                if (!response.ok) throw new Error("Gagal terhubung ke proxy");
+                if (!response.ok) throw new Error("HTTP Error " + response.status);
                 
                 const result = await response.json();
                 
@@ -291,10 +292,14 @@
                         avgImport: result.data.avgImport || 0, 
                         avgManual: result.data.avgManual 
                     });
+                    setIsGlobal(true);
                     return; // Jika sukses, hentikan eksekusi di sini
+                } else {
+                    throw new Error(result.error || "Error dari server backend GAS");
                 }
             } catch (error) {
                 console.warn("Gagal mengambil dari spreadsheet, menggunakan fallback lokal:", error);
+                showToast("Koneksi Global Gagal: " + error.message + ". Menampilkan data lokal sementara.", "error");
             }
 
             // Fallback (Cadangan): Jika backend gagal/belum siap, tetap gunakan LocalStorage
@@ -309,6 +314,7 @@
             const avgM = manLogs.length ? (manLogs.reduce((a, b) => a + b.duration, 0) / manLogs.length).toFixed(1) : 0;
 
             setGlobalStats({ isLoading: false, totalPenguji: uniqueTesters || 0, totalEksperimen: logs.length || 0, avgOcr: avgOcr, avgImport: avgImport, avgManual: avgM });
+            setIsGlobal(false);
         };
         
         fetchGlobalData();
@@ -316,9 +322,18 @@
 
       return (
         <div className="space-y-6 md:space-y-8 animate-fade-in pb-10">
-          <header className="mb-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Dashboard Pusat Riset</h2>
-            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Pemantauan metrik riset secara global (Tersinkronisasi via Pangkalan Data).</p>
+          <header className="mb-2 md:mb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Dashboard Pusat Riset</h2>
+              <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Pemantauan metrik riset secara global (Tersinkronisasi via Pangkalan Data).</p>
+            </div>
+            {globalStats.isLoading ? (
+               <span className="bg-slate-100 text-slate-500 px-3 py-2 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-2 w-max"><RefreshCw size={14} className="animate-spin"/> Memuat Data...</span>
+            ) : isGlobal ? (
+               <span className="bg-emerald-100 text-emerald-700 px-3 py-2 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-2 w-max"><Server size={14}/> Live: Terkoneksi Global</span>
+            ) : (
+               <span className="bg-orange-100 text-orange-700 px-3 py-2 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-2 w-max"><Database size={14}/> Mode Offline (Lokal)</span>
+            )}
           </header>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-5">
@@ -1188,7 +1203,7 @@
                       const score = String(idx + 1);
                       return (
                           <label key={score} className={`flex md:flex-col items-center justify-start md:justify-center gap-2 md:gap-1.5 p-2.5 md:p-3 border-2 rounded-xl cursor-pointer transition-all ${value === score ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-200 hover:border-emerald-300 bg-white text-slate-600'}`}>
-                              <input type="radio" name={name} required className="w-4 h-4 accent-emerald-600 flex-shrink-0" value={score} onChange={(e) => onChange(e.target.value)} />
+                              <input type="radio" name={name} required className="w-4 h-4 accent-emerald-600 flex-shrink-0" value={score} checked={value === score} onChange={(e) => onChange(e.target.value)} />
                               <span className="font-bold text-[10px] md:text-xs text-center leading-tight">{opt}</span>
                           </label>
                       )
