@@ -18,19 +18,12 @@
     .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(16, 185, 129, 0.4); border-radius: 10px; }
     input, select, textarea { font-size: 16px !important; } 
+    /* CSS Print yang dibersihkan dari escaped class untuk mencegah parsing error */
     @media print { 
       @page { size: A4 portrait; margin: 0; } 
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; } 
-      .print\:hidden { display: none !important; }
-      .print\:m-0 { margin: 0 !important; }
-      .print\:p-0 { padding: 0 !important; }
-      .print\:bg-white { background-color: white !important; }
-      .print\:shadow-none { box-shadow: none !important; }
-      .print\:border-none { border: none !important; }
-      .print\:w-full { width: 100% !important; }
-      .print\:h-full { height: 100% !important; }
       aside, header, .mobile-header, button:not(.print-btn) { display: none !important; }
-      main { padding: 0 !important; margin: 0 !important; width: 100% !important; background: white !important; }
+      main { padding: 0 !important; margin: 0 !important; width: 100% !important; background: white !important; overflow: visible !important; }
     }
   </style>
 </head>
@@ -200,14 +193,12 @@
       );
     }
 
-    // KOMPONEN BARU: Cek Publik QR Code Dokumen
     function PublicVerificationView({ setRole }) {
       const [docId, setDocId] = useState('');
       const [result, setResult] = useState(null);
 
       const handleVerify = (e) => {
         e.preventDefault();
-        // Cek data dari Global Docs di LocalStorage
         const docs = JSON.parse(localStorage.getItem('GLOBAL_DOCS') || '[]');
         const found = docs.find(d => d.docId === docId && d.status === 'Disetujui');
         
@@ -264,7 +255,6 @@
       )
     }
 
-    // Menampilkan statistik berdasarkan Spreadsheet GAS
     function AdminDashboardView({ showToast }) {
       const [globalStats, setGlobalStats] = useState({ isLoading: true, totalPenguji: 0, totalEksperimen: 0, avgOcr: 0, avgImport: 0, avgManual: 0 });
       const [isGlobal, setIsGlobal] = useState(false);
@@ -272,7 +262,6 @@
       useEffect(() => {
         const fetchGlobalData = async () => {
             try {
-                // Menembak backend GAS untuk mengambil data statistik global dari Spreadsheet
                 const response = await fetch('/api/gas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -284,6 +273,11 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
+                    // PENCEGAHAN CRASH JIKA URL GAS MASIH VERSI LAMA (UNDEFINED DATA)
+                    if (!result?.data) {
+                        throw new Error("Sistem belum di-Deploy 'New Version'.");
+                    }
+                    
                     setGlobalStats({ 
                         isLoading: false, 
                         totalPenguji: result.data.totalPenguji, 
@@ -293,16 +287,16 @@
                         avgManual: result.data.avgManual 
                     });
                     setIsGlobal(true);
-                    return; // Jika sukses, hentikan eksekusi di sini
+                    return; 
                 } else {
                     throw new Error(result.error || "Error dari server backend GAS");
                 }
             } catch (error) {
                 console.warn("Gagal mengambil dari spreadsheet, menggunakan fallback lokal:", error);
-                showToast("Koneksi Global Gagal: " + error.message + ". Menampilkan data lokal sementara.", "error");
+                showToast("Koneksi Global Gagal: " + error.message, "error");
             }
 
-            // Fallback (Cadangan): Jika backend gagal/belum siap, tetap gunakan LocalStorage
+            // Fallback Lokal
             const logs = JSON.parse(localStorage.getItem('GLOBAL_RESEARCH_LOGS') || '[]');
             const uniqueTesters = new Set(logs.map(l => l.tester)).size;
             const ocrLogs = logs.filter(l => l.method === 'OCR Gemini AI');
@@ -442,8 +436,8 @@
 
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-2">
-                <select value={formData[getField('provinsi')] || ''} onChange={(e) => handleChange(e, 'provinsi')} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm">
-                    <option value="">-- Pilih Provinsi --</option>
+                <select value={formData[getField('provinsi')] || ''} onChange={(e) => handleChange(e, 'provinsi')} className={`w-full bg-white border ${!formData[getField('provinsi')] ? 'border-red-300' : 'border-slate-300'} p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm`}>
+                    <option value="">-- Pilih Provinsi * --</option>
                     {provinces.map(p => <option key={p.id} data-id={p.id} value={p.name}>{p.name}</option>)}
                 </select>
                 <select value={formData[getField('kabupaten')] || ''} onChange={(e) => handleChange(e, 'kabupaten')} disabled={!regencies.length} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm disabled:opacity-50 bg-slate-50">
@@ -462,7 +456,7 @@
                   <input type="text" placeholder="RT" value={formData[getField('rt')] || ''} onChange={(e) => handleChange(e, 'rt')} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
                   <input type="text" placeholder="RW" value={formData[getField('rw')] || ''} onChange={(e) => handleChange(e, 'rw')} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
                 </div>
-                <input type="text" placeholder="Jalan / Gang / Dusun (Detail)" value={formData[getField('alamatLengkap')] || ''} onChange={(e) => handleChange(e, 'alamatLengkap')} className="col-span-1 md:col-span-2 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
+                <input type="text" placeholder="Jalan / Gang / Dusun (Detail) *" value={formData[getField('alamatLengkap')] || ''} onChange={(e) => handleChange(e, 'alamatLengkap')} className={`col-span-1 md:col-span-2 w-full bg-white border ${!formData[getField('alamatLengkap')] ? 'border-red-300' : 'border-slate-300'} p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm`} />
                 <input type="text" placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={(e) => handleChange(e, 'kodePos')} className="col-span-1 lg:col-span-1 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
             </div>
         );
@@ -475,6 +469,7 @@
       const waktuTempuhOptions = ['< 10 Menit', '11 - 20 Menit', '21 - 30 Menit', '31 - 40 Menit', '41 - 50 Menit', '51 - 60 Menit', '> 60 Menit'];
       const golDarahOptions = ['A', 'B', 'AB', 'O', 'Tidak Tahu'];
       const pendapatanOptions = ['Tidak Berpenghasilan / Tidak Tahu', '< Rp 1.000.000', 'Rp 1.000.001 - Rp 2.000.000', 'Rp 2.000.001 - Rp 3.000.000', 'Rp 3.000.001 - Rp 4.000.000', 'Rp 4.000.001 - Rp 5.000.000', '> Rp 5.000.000'];
+      const agamaOptions = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Lainnya'];
 
       const renderDateInput = (name, label, required = false) => (
         <div>
@@ -512,7 +507,7 @@
                     <input name={getField('rt')} placeholder="RT" value={formData[getField('rt')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
                     <input name={getField('rw')} placeholder="RW" value={formData[getField('rw')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
                 </div>
-                <input name={getField('alamatLengkap')} placeholder="Jalan / Dusun (Detail Lengkap)" value={formData[getField('alamatLengkap')] || ''} onChange={handleChange} className="col-span-1 md:col-span-2 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                <input name={getField('alamatLengkap')} placeholder="Jalan / Dusun (Detail Lengkap) *" value={formData[getField('alamatLengkap')] || ''} onChange={handleChange} className={`col-span-1 md:col-span-2 w-full bg-white border ${!formData[getField('alamatLengkap')] ? 'border-red-300' : 'border-slate-300'} p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium`} />
                 <input name={getField('kodePos')} placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={handleChange} className="col-span-1 lg:col-span-1 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
             </div>
         );
@@ -533,7 +528,7 @@
           <div className="bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
              <div className="flex justify-between items-center mb-4 md:mb-5">
                 <h4 className="font-extrabold text-slate-700 flex items-center gap-2 text-sm md:text-base"><User size={16}/> Data Pribadi {isSantri ? 'Santri' : 'Ustadz'}</h4>
-                <p className="text-[10px] text-red-500 font-bold">* Wajib diisi sebelum dikirim</p>
+                <p className="text-[10px] text-red-500 font-bold">* Wajib diisi</p>
              </div>
              
              {isSantri ? (
@@ -544,7 +539,7 @@
                     {renderInput('tempatLahir', 'Tempat Lahir', '', true)}
                     {renderDateInput('tglLahir', 'Tanggal Lahir', true)}
                     {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'], true)}
-                    {renderInput('agama', 'Agama (Sesuai KK)')}
+                    {renderSelect('agama', 'Agama (Sesuai KK)', agamaOptions, true)}
                  </div>
              ) : (
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
@@ -557,7 +552,7 @@
                         {renderInput('tempatLahir', 'Tempat Lahir', '', true)}
                         {renderDateInput('tglLahir', 'Tanggal Lahir', true)}
                         {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'], true)}
-                        {renderInput('agama', 'Agama (Sesuai KTP)')}
+                        {renderSelect('agama', 'Agama (Sesuai KTP)', agamaOptions, true)}
                         {renderSelect('golonganDarah', 'Golongan Darah', golDarahOptions)}
                         {renderInput('statusPernikahan', 'Status Pernikahan (Sesuai KTP)')}
                         {renderInput('pekerjaan', 'Pekerjaan (Sesuai KTP)')}
@@ -588,8 +583,8 @@
                      </div>
                      {formData.statusAyah === 'Hidup' ? (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                            {renderInput('ayahNik', 'NIK Ayah')}
-                            {renderInput('ayahNama', 'Nama Ayah')}
+                            {renderInput('ayahNik', 'NIK Ayah', '16 Digit Angka', true)}
+                            {renderInput('ayahNama', 'Nama Ayah', '', true)}
                             {renderInput('ayahTempatLahir', 'Tempat Lahir Ayah')}
                             {renderDateInput('ayahTglLahir', 'Tanggal Lahir Ayah')}
                             {renderInput('ayahPekerjaan', 'Pekerjaan Ayah')}
@@ -611,8 +606,8 @@
                      </div>
                      {formData.statusIbu === 'Hidup' ? (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                            {renderInput('ibuNik', 'NIK Ibu')}
-                            {renderInput('ibuNama', 'Nama Ibu')}
+                            {renderInput('ibuNik', 'NIK Ibu', '16 Digit Angka', true)}
+                            {renderInput('ibuNama', 'Nama Ibu', '', true)}
                             {renderInput('ibuTempatLahir', 'Tempat Lahir Ibu')}
                             {renderDateInput('ibuTglLahir', 'Tanggal Lahir Ibu')}
                             {renderInput('ibuPekerjaan', 'Pekerjaan Ibu')}
@@ -876,10 +871,17 @@
       const handleSaveAndStop = async (e) => {
         e.preventDefault();
         
-        // PENGUNCIAN/VALIDASI WAJIB:
-        // Cek agar pengguna tidak asal klik Selesaikan Sesi tanpa melengkapi data dasar.
-        if(!formData.nik || !formData.nama || !formData.tempatLahir || !formData.tglLahir || !formData.jenisKelamin || !formData.provinsi) {
-            return showToast("Gagal Disimpan! NIK, Nama, Tempat/Tgl Lahir, Jenis Kelamin, dan Provinsi wajib dilengkapi terlebih dahulu.", "error");
+        if(!formData.nik || !formData.nama || !formData.tempatLahir || !formData.tglLahir || !formData.jenisKelamin || !formData.provinsi || !formData.agama || !formData.alamatLengkap) {
+            return showToast("Gagal Disimpan! Pastikan data berlabel tanda bintang merah (*) sudah terisi.", "error");
+        }
+        
+        if (isSantri) {
+            if (formData.statusAyah === 'Hidup' && (!formData.ayahNik || !formData.ayahNama)) {
+                return showToast("Gagal Disimpan! NIK dan Nama Ayah wajib diisi jika statusnya Hidup.", "error");
+            }
+            if (formData.statusIbu === 'Hidup' && (!formData.ibuNik || !formData.ibuNama)) {
+                return showToast("Gagal Disimpan! NIK dan Nama Ibu wajib diisi jika statusnya Hidup.", "error");
+            }
         }
         
         setIsTimerRunning(false); setIsProcessingGas(true);
@@ -908,7 +910,6 @@
         const newLog = { id: `LOG-${Date.now().toString().slice(-4)}`, tester: testerInfo.nama, target: targetLabel, method: methodUsed, duration: timeElapsed, timestamp: new Date().toLocaleTimeString('id-ID') };
         setResearchLogs([...researchLogs, newLog]);
         
-        // PENYIMPANAN LOG KE GLOBAL STORAGE UNTUK DASHBOARD ADMIN
         const globalLogs = JSON.parse(localStorage.getItem('GLOBAL_RESEARCH_LOGS') || '[]');
         localStorage.setItem('GLOBAL_RESEARCH_LOGS', JSON.stringify([...globalLogs, newLog]));
         
@@ -1399,7 +1400,10 @@
 
       return (
         <div className="animate-fade-in print:m-0 print:p-0 max-w-6xl mx-auto w-full">
-          <header className="mb-6 md:mb-8 border-b pb-3 md:pb-4 print:hidden"><h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Arsip Dokumen</h2><p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Dokumen resmi yang telah divalidasi siap dicetak.</p></header>
+          <header className="mb-6 md:mb-8 border-b pb-3 md:pb-4 print:hidden">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Arsip Dokumen</h2>
+            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Dokumen resmi yang telah divalidasi siap dicetak.</p>
+          </header>
 
           {!selectedDoc ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -1419,8 +1423,10 @@
               {approvedReqs.length === 0 && <div className="col-span-full text-center py-16 md:py-24 bg-white border-2 border-dashed border-slate-200 rounded-2xl md:rounded-3xl"><FileSearch size={36} className="mx-auto text-slate-300 mb-3"/><p className="font-bold text-slate-400 text-sm">Belum ada dokumen diterbitkan.</p></div>}
             </div>
           ) : (
-            <div className="bg-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl border border-slate-300 max-w-4xl mx-auto pb-8 md:pb-12 print:shadow-none print:border-none print:bg-white print:pb-0 overflow-hidden w-full overflow-x-auto">
-              <div className="bg-slate-800 p-3 md:p-5 flex flex-col md:flex-row justify-between items-center text-white print:hidden gap-3 min-w-[600px] md:min-w-full">
+            // PERBAIKAN PRATINJAU A4: Layout diperbaiki dengan overflow-scroll aman agar CSS dan Layout Tidak Berantakan
+            <div className="bg-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl border border-slate-300 max-w-4xl mx-auto print:shadow-none print:border-none print:bg-white overflow-hidden w-full flex flex-col">
+              
+              <div className="bg-slate-800 p-3 md:p-5 flex flex-col md:flex-row justify-between items-center text-white print:hidden gap-3 w-full">
                 <span className="font-mono text-xs md:text-sm font-bold flex items-center gap-2"><ClipboardList size={16}/> Pratinjau Kertas A4</span>
                 <div className="flex gap-2 md:gap-3 w-full md:w-auto">
                   <button onClick={() => window.print()} className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-3 py-2 md:px-5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm flex items-center justify-center gap-2 transition"><Download size={14}/> Cetak PDF</button>
@@ -1428,46 +1434,48 @@
                 </div>
               </div>
               
-              <div className="mx-auto mt-6 md:mt-10 bg-white text-black shadow-2xl print:shadow-none print:mt-0 relative scale-75 md:scale-100 origin-top" style={{ width: '210mm', minHeight: '297mm', padding: '20mm', marginBottom: '-25%' }}>
-                <div className="flex flex-col mb-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-[110px] h-[110px] flex items-center justify-center flex-shrink-0">
-                      {testerInfo?.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain" /> : <div className="w-20 h-20 border-2 border-gray-300 border-dashed rounded-full flex items-center justify-center text-gray-400 font-bold text-xs">LOGO</div>}
+              <div className="w-full overflow-x-auto p-4 md:p-8 bg-slate-200 print:p-0 print:bg-white custom-scrollbar flex justify-center">
+                <div className="bg-white text-black shadow-2xl print:shadow-none flex-shrink-0" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
+                  <div className="flex flex-col mb-8">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-[110px] h-[110px] flex items-center justify-center flex-shrink-0">
+                        {testerInfo?.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain" /> : <div className="w-20 h-20 border-2 border-gray-300 border-dashed rounded-full flex items-center justify-center text-gray-400 font-bold text-xs">LOGO</div>}
+                      </div>
+                      <div className="flex-1 text-center px-4">
+                        <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "14pt", fontWeight: "bold", textTransform: "uppercase", marginBottom: "4px" }}>TAMAN PENDIDIKAN AL QURAN</h1>
+                        <h2 style={{ fontFamily: "'Bookman Old Style', serif", fontSize: "18pt", fontWeight: "bold", marginBottom: "4px" }}>{testerInfo?.lembaga || '(Nama Lembaga)'}</h2>
+                        <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "12pt" }}>Nomor Izin Operasional: {testerInfo?.nomorIjop || '-'} <br/> NSDT : {testerInfo?.nomorStatistik || '-'}</p>
+                      </div>
+                      <div className="w-[110px] h-[110px] flex-shrink-0 opacity-0 pointer-events-none"></div>
                     </div>
-                    <div className="flex-1 text-center px-4">
-                      <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "14pt", fontWeight: "bold", textTransform: "uppercase", marginBottom: "4px" }}>TAMAN PENDIDIKAN AL QURAN</h1>
-                      <h2 style={{ fontFamily: "'Bookman Old Style', serif", fontSize: "18pt", fontWeight: "bold", marginBottom: "4px" }}>{testerInfo?.lembaga || '(Nama Lembaga)'}</h2>
-                      <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "12pt" }}>Nomor Izin Operasional: {testerInfo?.nomorIjop || '-'} <br/> NSDT : {testerInfo?.nomorStatistik || '-'}</p>
-                    </div>
-                    <div className="w-[110px] h-[110px] flex-shrink-0 opacity-0 pointer-events-none"></div>
+                    <div className="bg-black w-full py-1.5 px-4 text-center mb-1"><p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "11pt", color: "white", margin: 0 }}>Sekretariat : {testerInfo?.alamat}</p></div>
+                    <div className="border-b-[4px] border-black w-full mb-1"></div><div className="border-b border-black w-full"></div>
                   </div>
-                  <div className="bg-black w-full py-1.5 px-4 text-center mb-1"><p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "11pt", color: "white", margin: 0 }}>Sekretariat : {testerInfo?.alamat}</p></div>
-                  <div className="border-b-[4px] border-black w-full mb-1"></div><div className="border-b border-black w-full"></div>
-                </div>
-                
-                <h3 className="text-xl font-bold underline mb-10 uppercase tracking-widest text-center mt-6">{selectedDoc.jenis}</h3>
-                <p className="text-left mb-6 text-lg leading-relaxed">Yang bertanda tangan di bawah ini, Kepala {testerInfo?.lembaga || 'Lembaga Pendidikan Al-Quran'}, menerangkan dengan sesungguhnya bahwa:</p>
-                
-                <table className="text-left mb-10 mx-auto w-10/12 text-lg">
-                  <tbody>
-                    <tr><td className="py-3 w-2/5 font-semibold align-top">Nama Lengkap</td><td className="py-3 px-3 align-top">:</td><td className="py-3 font-bold uppercase">{selectedDoc.nama}</td></tr>
-                    <tr><td className="py-3 font-semibold align-top">Tempat, Tgl Lahir</td><td className="py-3 px-3 align-top">:</td><td className="py-3 capitalize">{selectedDoc.ttl}</td></tr>
-                    <tr><td className="py-3 font-semibold align-top">Alamat Domisili</td><td className="py-3 px-3 align-top">:</td><td className="py-3 leading-relaxed capitalize">{selectedDoc.alamat}</td></tr>
-                  </tbody>
-                </table>
-                
-                <p className="text-left mb-20 text-lg leading-loose text-justify">Adalah benar yang bersangkutan merupakan tenaga pendidik/staf yang aktif di lembaga kami. Demikian dokumen administrasi fungsional ini dibuat secara sah melalui sistem terpadu untuk dapat dipergunakan sebagaimana mestinya.</p>
-                
-                <div className="flex justify-end pr-4">
-                  <div className="text-center">
-                    <p className="mb-2 text-lg">{testerInfo?.alamat?.split(',')[0] || 'Kota'}, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    <p className="mb-6 text-lg font-bold">Kepala Lembaga,</p>
-                    <div className="relative inline-block border-4 border-emerald-900 p-2 rounded-xl mb-3 bg-white">
-                      <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedDoc.docId}`} alt="QR Code TTE" className="w-28 h-28 mix-blend-multiply" />
-                      <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-3 py-0.5 text-[11px] font-black text-emerald-900 border-2 border-emerald-900 rounded-full">TTE SAH</div>
+                  
+                  <h3 className="text-xl font-bold underline mb-10 uppercase tracking-widest text-center mt-6">{selectedDoc.jenis}</h3>
+                  <p className="text-left mb-6 text-lg leading-relaxed">Yang bertanda tangan di bawah ini, Kepala {testerInfo?.lembaga || 'Lembaga Pendidikan Al-Quran'}, menerangkan dengan sesungguhnya bahwa:</p>
+                  
+                  <table className="text-left mb-10 mx-auto w-10/12 text-lg">
+                    <tbody>
+                      <tr><td className="py-3 w-2/5 font-semibold align-top">Nama Lengkap</td><td className="py-3 px-3 align-top">:</td><td className="py-3 font-bold uppercase">{selectedDoc.nama}</td></tr>
+                      <tr><td className="py-3 font-semibold align-top">Tempat, Tgl Lahir</td><td className="py-3 px-3 align-top">:</td><td className="py-3 capitalize">{selectedDoc.ttl}</td></tr>
+                      <tr><td className="py-3 font-semibold align-top">Alamat Domisili</td><td className="py-3 px-3 align-top">:</td><td className="py-3 leading-relaxed capitalize">{selectedDoc.alamat}</td></tr>
+                    </tbody>
+                  </table>
+                  
+                  <p className="text-left mb-20 text-lg leading-loose text-justify">Adalah benar yang bersangkutan merupakan tenaga pendidik/staf yang aktif di lembaga kami. Demikian dokumen administrasi fungsional ini dibuat secara sah melalui sistem terpadu untuk dapat dipergunakan sebagaimana mestinya.</p>
+                  
+                  <div className="flex justify-end pr-4">
+                    <div className="text-center">
+                      <p className="mb-2 text-lg">{testerInfo?.alamat?.split(',')[0] || 'Kota'}, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="mb-6 text-lg font-bold">Kepala Lembaga,</p>
+                      <div className="relative inline-block border-4 border-emerald-900 p-2 rounded-xl mb-3 bg-white">
+                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedDoc.docId}`} alt="QR Code TTE" className="w-28 h-28 mix-blend-multiply" />
+                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-3 py-0.5 text-[11px] font-black text-emerald-900 border-2 border-emerald-900 rounded-full">TTE SAH</div>
+                      </div>
+                      <p className="text-lg font-bold underline underline-offset-4 uppercase">{testerInfo?.namaKepala || '..........................'}</p>
+                      <p className="text-sm font-mono font-bold text-slate-800 bg-slate-100 py-1.5 px-4 rounded-lg mt-3 uppercase border border-slate-300 w-max mx-auto">ID: {selectedDoc.docId}</p>
                     </div>
-                    <p className="text-lg font-bold underline underline-offset-4 uppercase">{testerInfo?.namaKepala || '..........................'}</p>
-                    <p className="text-sm font-mono font-bold text-slate-800 bg-slate-100 py-1.5 px-4 rounded-lg mt-3 uppercase border border-slate-300 w-max mx-auto">ID: {selectedDoc.docId}</p>
                   </div>
                 </div>
               </div>
@@ -1493,7 +1501,6 @@
       
       const [santriData, setSantriData] = useState([]);
       const [ustadzData, setUstadzData] = useState([]);
-      // Sinkronisasi dokumen global agar bisa discan publik
       const [dokumenReq, setDokumenReq] = useState(() => JSON.parse(localStorage.getItem('GLOBAL_DOCS') || '[]'));
       const [researchLogs, setResearchLogs] = useState([]);
       const [activeTab, setActiveTab] = useState('dashboard');
@@ -1505,14 +1512,10 @@
         setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 5000);
       };
 
-      // Simpan perubahan dokumen agar terekam ke LocalStorage untuk Publik QR Scanner
       useEffect(() => {
           localStorage.setItem('GLOBAL_DOCS', JSON.stringify(dokumenReq));
       }, [dokumenReq]);
 
-      const hasOcrSantri = researchLogs.some(l => l.target === 'Santri' && l.method === 'OCR Gemini AI');
-      const hasOcrUstadz = researchLogs.some(l => l.target === 'Ustadz' && l.method === 'OCR Gemini AI');
-      const hasManual = researchLogs.some(l => l.method === 'Manual');
       const isKuisionerUnlocked = true;
 
       const handleTabChange = (tab) => {
@@ -1538,7 +1541,6 @@
         );
       }
       
-      // Jika peran adalah Publik untuk scan dokumen
       if (currentRole === 'public') {
          return (
              <React.Fragment>
