@@ -775,7 +775,7 @@
         
         try {
             const imageData = await processImageForOCR(rawFile);
-            const promptText = `Ekstrak informasi dari dokumen Kartu Keluarga (KK) ini. \n1. Cari anggota keluarga (anak) dengan NIK: ${formData.nik} dan ekstrak datanya.\n2. Cek kolom "Nama Ayah" dan "Nama Ibu" dari baris anak tersebut, dan isikan ke "ayahNama" dan "ibuNama".\n3. Jika Ayah/Ibu tersebut TERDAPAT sebagai anggota keluarga dalam KK ini, ekstrak seluruh detailnya (NIK, TTL, Pekerjaan, dll) dan set statusAyah/statusIbu menjadi "Hidup".\n4. PENTING: Jika Ayah/Ibu TIDAK ADA dalam daftar anggota KK ini (Santri menumpang KK keluarga lain), maka:\n   - Kosongkan detail NIK, TTL, Pekerjaan untuk orang tua tersebut.\n   - Set "statusAyah" dan "statusIbu" menjadi "Meninggal" (agar sistem tahu mereka tidak ada di dokumen).\n   - Cari orang dengan usia PALING TUA di dalam KK tersebut untuk dijadikan sebagai WALI.\n   - Isikan nama orang tertua tersebut ke "waliNama".\n   - Tentukan "waliHubungan" (misalnya Kakek, Nenek, Paman, atau Kepala Keluarga) berdasarkan relasinya terhadap santri.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"noKk":"","nama":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":"","statusAyah":"Hidup/Meninggal","ayahNik":"","ayahNama":"","ayahTempatLahir":"","ayahTglLahir":"YYYY-MM-DD","ayahPekerjaan":"","ayahEstimasiGaji":"","statusIbu":"Hidup/Meninggal","ibuNik":"","ibuNama":"","ibuTempatLahir":"","ibuTglLahir":"YYYY-MM-DD","ibuPekerjaan":"","ibuEstimasiGaji":"","waliNama":"","waliHubungan":""}`;
+            const promptText = `Ekstrak data dari Kartu Keluarga (KK). 1. Cari anak dengan NIK: ${formData.nik}. 2. Lihat nama Ayah dan Ibu dari anak tersebut, dan TETAP tuliskan ke "ayahNama" dan "ibuNama". 3. CARI APAKAH AYAH/IBU TERSEBUT ADA DI DALAM DAFTAR ANGGOTA KELUARGA KK INI? 4. JIKA ADA: Ekstrak detailnya dan WAJIB set "statusAyah" dan "statusIbu" menjadi "Hidup". 5. JIKA TIDAK ADA DI KK INI (Misal santri menumpang KK): Kosongkan detail NIK/TTL/Pekerjaan mereka, dan WAJIB set "statusAyah" dan "statusIbu" menjadi "Meninggal" (ini kode sistem bahwa mereka tidak tercatat di dokumen KK ini), lalu cari orang dengan usia PALING TUA di dalam KK ini untuk dijadikan "waliNama", dan tentukan "waliHubungan" (misal Kakek/Paman).\n\nBerikan HANYA format JSON:\n{"noKk":"","nama":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":"","statusAyah":"Hidup/Meninggal","ayahNik":"","ayahNama":"","ayahTempatLahir":"","ayahTglLahir":"YYYY-MM-DD","ayahPekerjaan":"","ayahEstimasiGaji":"","statusIbu":"Hidup/Meninggal","ibuNik":"","ibuNama":"","ibuTempatLahir":"","ibuTglLahir":"YYYY-MM-DD","ibuPekerjaan":"","ibuEstimasiGaji":"","waliNama":"","waliHubungan":""}`;
             
             const payload = {
                 contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }]
@@ -803,36 +803,36 @@
       };
 
       const runGeminiOCRUstadzKTP = async () => {
-          if (!rawFile) return showToast("Pilih gambar KTP terlebih dahulu!", "error");
-          setIsExtracting(true);
-          
-          try {
-              const imageData = await processImageForOCR(rawFile);
-              const promptText = `Ekstrak informasi dari dokumen KTP ini. Pisahkan nama menjadi tiga bagian: gelarDepan, nama (tanpa gelar), dan gelarBelakang.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"nik":"","gelarDepan":"","nama":"","gelarBelakang":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","golonganDarah":"","statusPernikahan":"","pekerjaan":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":""}`;
+        if (!rawFile) return showToast("Pilih gambar KTP terlebih dahulu!", "error");
+        setIsExtracting(true);
+        
+        try {
+            const imageData = await processImageForOCR(rawFile);
+            const promptText = `Ekstrak data dari KTP ini. Berikan HANYA format JSON:\n{"nik":"","nama":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","golonganDarah":"","statusPernikahan":"","pekerjaan":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":""}`;
+            
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }]
+            };
 
-              const payload = {
-                  contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }]
-              };
-
-              const url = `/api/gemini`;
-              const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-              
-              const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (jsonText) {
-                  const cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
-                  const data = JSON.parse(cleanJson);
-                  setFormData(prev => ({ ...prev, ...data }));
-                  setOcrStep('UPLOAD_KK_USTADZ');
-                  showToast("KTP terbaca. Silakan lanjut upload KK.", "info");
-              } else { 
-                  throw new Error("Respon AI kosong"); 
-              }
-          } catch (error) { 
-              console.error("OCR Error:", error);
-              showToast(`Gagal: ${error.message}`, "error"); 
-          } finally { 
-              setIsExtracting(false); setRawFile(null); setFilePreview(null); 
-          }
+            const url = `/api/gemini`;
+            const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            
+            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (jsonText) {
+                const cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const data = JSON.parse(cleanJson);
+                setFormData(prev => ({ ...prev, ...data }));
+                setOcrStep('UPLOAD_KK_USTADZ');
+                showToast("KTP terbaca. Silakan lanjut upload KK.", "info");
+            } else { 
+                throw new Error("Respon AI kosong"); 
+            }
+        } catch (error) { 
+            console.error("OCR Error:", error);
+            showToast(`Gagal: ${error.message}`, "error"); 
+        } finally { 
+            setIsExtracting(false); setRawFile(null); setFilePreview(null); 
+        }
       };
 
       const runGeminiOCRUstadzKK = async () => {
@@ -1630,12 +1630,12 @@
                   <SidebarItem icon={<Users />} label="Simulasi Entri Santri" active={activeTab === 'ocr-santri'} onClick={() => handleTabChange('ocr-santri')} />
                   <SidebarItem icon={<UserCheck />} label="Simulasi Entri Ustadz" active={activeTab === 'ocr-ustadz'} onClick={() => handleTabChange('ocr-ustadz')} />
                   <SidebarItem icon={<BarChart />} label="Laporan Metrik" active={activeTab === 'report'} onClick={() => handleTabChange('report')} />
-
+                  
                   <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Modul Administrasi</p>
                   <SidebarItem icon={<FileText />} label="Pengajuan Surat" active={activeTab === 'request'} onClick={() => handleTabChange('request')} />
                   <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Dokumen" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
-                  
                   <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Evaluasi Data Bab 4</p>
+                  
                   <SidebarItem 
                       icon={isKuisionerUnlocked ? <MessageSquare /> : <Lock />} 
                       label="Kuisioner Kepuasan" 
@@ -1645,6 +1645,7 @@
                           else showToast("Selesaikan minimal 1x OCR Santri, 1x OCR Ustadz, dan 1x Manual untuk membuka!", "error");
                       }} 
                   />
+                  
                 </React.Fragment>
               )}
               {currentRole === 'kepala' && (
