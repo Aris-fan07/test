@@ -273,7 +273,10 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    if (!result?.data) throw new Error("Sistem belum di-Deploy 'New Version'.");
+                    // PENCEGAHAN CRASH JIKA URL GAS MASIH VERSI LAMA (UNDEFINED DATA)
+                    if (!result?.data) {
+                        throw new Error("Sistem belum di-Deploy 'New Version'.");
+                    }
                     
                     setGlobalStats({ 
                         isLoading: false, 
@@ -290,8 +293,10 @@
                 }
             } catch (error) {
                 console.warn("Gagal mengambil dari spreadsheet, menggunakan fallback lokal:", error);
+                // showToast("Koneksi Global Gagal: " + error.message, "error");
             }
 
+            // Fallback Lokal
             const logs = JSON.parse(localStorage.getItem('GLOBAL_RESEARCH_LOGS') || '[]');
             const uniqueTesters = new Set(logs.map(l => l.tester)).size;
             const ocrLogs = logs.filter(l => l.method === 'OCR Gemini AI');
@@ -549,6 +554,7 @@
                         {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'], true)}
                         {renderSelect('agama', 'Agama (Sesuai KTP)', agamaOptions, true)}
                         {renderSelect('golonganDarah', 'Golongan Darah', golDarahOptions)}
+                        {renderInput('statusPernikahan', 'Status Pernikahan (Sesuai KTP)')}
                         {renderInput('pekerjaan', 'Pekerjaan (Sesuai KTP)')}
                     </div>
                  </div>
@@ -627,39 +633,13 @@
           )}
 
           {!isSantri && (
-              <div className="space-y-4 md:space-y-6">
-                  <div className="bg-purple-50/50 p-4 md:p-6 rounded-2xl border border-purple-100 shadow-sm">
-                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-5 gap-2">
-                         <h4 className="font-extrabold text-purple-800 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Status Perkawinan</h4>
-                         <select name="statusPernikahan" value={formData.statusPernikahan || ''} onChange={handleChange} className="text-[10px] md:text-xs font-bold border-2 border-purple-200 rounded p-1.5 md:p-2 outline-none bg-white text-purple-800 w-full md:w-auto">
-                             <option value="">-- Pilih --</option>
-                             <option value="Belum Kawin">Belum Kawin</option>
-                             <option value="Kawin">Kawin</option>
-                             <option value="Janda/Duda">Janda/Duda</option>
-                         </select>
-                     </div>
-                     
-                     {(formData.statusPernikahan === 'Kawin' || formData.statusPernikahan === 'Janda/Duda') && (
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                            {renderInput('pasanganNama', 'Nama Suami/Istri', '', formData.statusPernikahan === 'Kawin')}
-                            {renderInput('jumlahAnak', 'Jumlah Anak', 'Contoh: 2')}
-                            {renderInput('noKk', 'Nomor KK', '16 Digit Angka')}
-                         </div>
-                     )}
-
-                     {formData.statusPernikahan === 'Belum Kawin' && (
-                         <div className="grid grid-cols-1 gap-3 md:gap-4">
-                            {renderInput('noKk', 'Nomor KK', '16 Digit Angka')}
-                         </div>
-                     )}
-                  </div>
-
-                  <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm">
-                     <h4 className="font-extrabold text-pink-800 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Informasi Ibu Kandung</h4>
-                     <div className="grid grid-cols-1 gap-3 md:gap-4">
-                        {renderInput('ibuNama', 'Nama Ibu')}
-                     </div>
-                  </div>
+              <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm">
+                 <h4 className="font-extrabold text-pink-800 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Informasi Ibu Kandung</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                    {renderInput('ibuNama', 'Nama Ibu')}
+                    {renderInput('ibuStatusPernikahan', 'Status Pernikahan Ibu', 'Contoh: Cerai Mati')}
+                    {renderInput('ibuNoKk', 'Nomor KK Ibu')}
+                 </div>
               </div>
           )}
           
@@ -702,8 +682,7 @@
           nik: '', gelarDepan: '', nama: '', gelarBelakang: '', tempatLahir: '', tglLahir: '', jenisKelamin: '', agama: '', golonganDarah: '', statusPernikahan: '', pekerjaan: '',
           provinsi: '', kabupaten: '', kecamatan: '', desa: '', rt: '', rw: '', alamatLengkap: '', kodePos: '',
           jarak: '', transportasi: '', waktuTempuh: '',
-          noKk: '', pasanganNama: '', jumlahAnak: '',
-          ibuNama: '',
+          ibuNama: '', ibuStatusPernikahan: '', ibuNoKk: '',
           statusValidasi: ''
       };
 
@@ -796,7 +775,7 @@
         
         try {
             const imageData = await processImageForOCR(rawFile);
-            const promptText = `Ekstrak informasi dari dokumen Kartu Keluarga ini. Cari anak dengan NIK: ${formData.nik} dan ekstrak datanya secara lengkap, PASTIKAN kolom "agama" terisi sesuai dengan KK. Terakhir, cari data Kepala Keluarga (Ayah) dan Isteri (Ibu).\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"noKk":"","nama":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":"","statusAyah":"Hidup/Meninggal","ayahNik":"","ayahNama":"","ayahTempatLahir":"","ayahTglLahir":"YYYY-MM-DD","ayahPekerjaan":"","ayahEstimasiGaji":"","statusIbu":"Hidup/Meninggal","ibuNik":"","ibuNama":"","ibuTempatLahir":"","ibuTglLahir":"YYYY-MM-DD","ibuPekerjaan":"","ibuEstimasiGaji":"","waliNama":"","waliHubungan":""}`;
+            const promptText = `Ekstrak informasi dari dokumen Kartu Keluarga (KK) ini. \n1. Cari anggota keluarga (anak) dengan NIK: ${formData.nik} dan ekstrak datanya.\n2. Cek kolom "Nama Ayah" dan "Nama Ibu" dari baris anak tersebut, dan isikan ke "ayahNama" dan "ibuNama".\n3. Jika Ayah/Ibu tersebut TERDAPAT sebagai anggota keluarga dalam KK ini, ekstrak seluruh detailnya (NIK, TTL, Pekerjaan, dll) dan set statusAyah/statusIbu menjadi "Hidup".\n4. PENTING: Jika Ayah/Ibu TIDAK ADA dalam daftar anggota KK ini (Santri menumpang KK keluarga lain), maka:\n   - Kosongkan detail NIK, TTL, Pekerjaan untuk orang tua tersebut.\n   - Set "statusAyah" dan "statusIbu" menjadi "Meninggal" (agar sistem tahu mereka tidak ada di dokumen).\n   - Cari orang dengan usia PALING TUA di dalam KK tersebut untuk dijadikan sebagai WALI.\n   - Isikan nama orang tertua tersebut ke "waliNama".\n   - Tentukan "waliHubungan" (misalnya Kakek, Nenek, Paman, atau Kepala Keluarga) berdasarkan relasinya terhadap santri.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"noKk":"","nama":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":"","statusAyah":"Hidup/Meninggal","ayahNik":"","ayahNama":"","ayahTempatLahir":"","ayahTglLahir":"YYYY-MM-DD","ayahPekerjaan":"","ayahEstimasiGaji":"","statusIbu":"Hidup/Meninggal","ibuNik":"","ibuNama":"","ibuTempatLahir":"","ibuTglLahir":"YYYY-MM-DD","ibuPekerjaan":"","ibuEstimasiGaji":"","waliNama":"","waliHubungan":""}`;
             
             const payload = {
                 contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }]
@@ -829,7 +808,7 @@
           
           try {
               const imageData = await processImageForOCR(rawFile);
-              const promptText = `Ekstrak informasi dari dokumen KTP ini. Pisahkan nama menjadi tiga bagian: gelarDepan, nama (tanpa gelar), dan gelarBelakang. PASTIKAN mengekstrak kolom "agama" dan "golonganDarah" sesuai KTP. Untuk "statusPernikahan", petakan menjadi salah satu dari: "Belum Kawin", "Kawin", atau "Janda/Duda" berdasarkan status di KTP.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"nik":"","gelarDepan":"","nama":"","gelarBelakang":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","golonganDarah":"","statusPernikahan":"","pekerjaan":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":""}`;
+              const promptText = `Ekstrak informasi dari dokumen KTP ini. Pisahkan nama menjadi tiga bagian: gelarDepan, nama (tanpa gelar), dan gelarBelakang.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"nik":"","gelarDepan":"","nama":"","gelarBelakang":"","tempatLahir":"","tglLahir":"YYYY-MM-DD","jenisKelamin":"Laki-laki/Perempuan","agama":"","golonganDarah":"","statusPernikahan":"","pekerjaan":"","provinsi":"","kabupaten":"","kecamatan":"","desa":"","rt":"","rw":"","alamatLengkap":"","kodePos":""}`;
 
               const payload = {
                   contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }]
@@ -862,7 +841,7 @@
           
           try {
               const imageData = await processImageForOCR(rawFile);
-              const promptText = `Ekstrak informasi dari Kartu Keluarga ini. Temukan Nomor KK (noKk). Cari data Ibu kandung dari ustadz tersebut (ibuNama). Jika statusnya kawin/janda/duda, temukan nama suami/istri (pasanganNama) dan hitung jumlah anak (jumlahAnak) jika ada.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"noKk":"","ibuNama":"","pasanganNama":"","jumlahAnak":""}`;
+              const promptText = `Ekstrak informasi Ibu kandung dari Kartu Keluarga ini. Temukan nama ibu (ibuNama), status pernikahan ibu jika ada (ibuStatusPernikahan), dan ambil Nomor KK.\n\nBerikan HANYA format JSON (tanpa awalan markdown) dengan format persis berikut:\n{"ibuNik":"","ibuNama":"","ibuStatusPernikahan":"","ibuNoKk":""}`;
               
               const payload = {
                   contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: imageData }] }]
@@ -877,7 +856,7 @@
                   const data = JSON.parse(cleanJson);
                   setFormData(prev => ({ ...prev, ...data, statusValidasi: 'Ekstraksi KTP & KK Selesai. Silakan lengkapi form.' }));
                   setOcrStep('FORM');
-                  showToast("Berhasil mengekstrak data Pelengkap dari KK.", "success");
+                  showToast("Berhasil mengekstrak data Ibu dari KK.", "success");
               } else { 
                   throw new Error("Respon AI kosong"); 
               }
@@ -902,10 +881,6 @@
             }
             if (formData.statusIbu === 'Hidup' && (!formData.ibuNik || !formData.ibuNama)) {
                 return showToast("Gagal Disimpan! NIK dan Nama Ibu wajib diisi jika statusnya Hidup.", "error");
-            }
-        } else {
-            if (formData.statusPernikahan === 'Kawin' && !formData.pasanganNama) {
-                return showToast("Gagal Disimpan! Nama Suami/Istri wajib diisi jika status perkawinan Kawin.", "error");
             }
         }
         
@@ -1064,7 +1039,7 @@
                     <React.Fragment>
                       <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm"><Upload size={28} className="text-purple-600" /></div>
                       <p className="font-extrabold text-slate-800 text-base md:text-lg mb-1 md:mb-2 px-2">Upload Dokumen (KK)</p>
-                      <p className="text-xs md:text-sm text-slate-500 font-medium max-w-sm mx-auto px-4">Untuk melengkapi Nomor KK, Status Perkawinan, dan Nama Ibu Kandung.</p>
+                      <p className="text-xs md:text-sm text-slate-500 font-medium max-w-sm mx-auto px-4">Untuk melengkapi data Ibu Kandung dari Ustadz.</p>
                     </React.Fragment>
                   ) : (
                      <div className="mb-4 md:mb-6">
@@ -1074,7 +1049,7 @@
                   )}
                   <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                   <button onClick={runGeminiOCRUstadzKK} disabled={isExtracting || !rawFile} className="mt-4 md:mt-6 w-full max-w-xs mx-auto bg-purple-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-purple-600/30 relative z-20 hover:bg-purple-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base">
-                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak Data Pelengkap KK AI"}
+                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak Data Ibu via KK"}
                   </button>
                 </div>
               )}
@@ -1096,6 +1071,7 @@
             </div>
           )}
 
+          {/* MENAMBAHKAN TABEL DAFTAR NAMA YANG BERHASIL DIINPUT */}
           {targetData.length > 0 && (
             <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 mt-6 md:mt-8 overflow-hidden animate-fade-in w-full">
               <div className="p-4 md:p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
@@ -1207,6 +1183,36 @@
       );
     }
 
+    const LikertQuestion = ({ number, title, statement, name, value, onChange }) => (
+        <div className="space-y-3 bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-100 hover:border-emerald-200 transition-colors">
+            <div className="flex items-start gap-3">
+                <div className="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-lg flex items-center justify-center font-black flex-shrink-0 text-sm">{number}</div>
+                <div>
+                    <h4 className="font-extrabold text-sm md:text-base text-slate-800">{title}</h4>
+                    <p className="text-xs md:text-sm text-slate-500 mt-1 font-medium">{statement}</p>
+                </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-4">
+                {['Sangat Tidak Setuju', 'Tidak Setuju', 'Netral', 'Setuju', 'Sangat Setuju'].map((opt, idx) => {
+                    const score = String(idx + 1);
+                    return (
+                        <label key={score} className={`flex md:flex-col items-center justify-start md:justify-center gap-2 md:gap-1.5 p-2.5 md:p-3 border-2 rounded-xl cursor-pointer transition-all ${value === score ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-200 hover:border-emerald-300 bg-white text-slate-600'}`}>
+                            <input type="radio" name={name} required className="w-4 h-4 accent-emerald-600 flex-shrink-0" value={score} checked={value === score} onChange={(e) => onChange(e.target.value)} />
+                            <span className="font-bold text-[10px] md:text-xs text-center leading-tight">{opt}</span>
+                        </label>
+                    )
+                })}
+            </div>
+        </div>
+    );
+
+    const SectionHeader = ({ title, desc }) => (
+        <div className="mb-3 mt-6 border-b border-slate-200 pb-2">
+            <h3 className="text-lg md:text-xl font-extrabold text-slate-800">{title}</h3>
+            <p className="text-xs md:text-sm text-slate-500 font-medium">{desc}</p>
+        </div>
+    );
+
     function KuisionerView({ testerInfo, showToast }) {
       const [submitted, setSubmitted] = useState(false);
       const [isSending, setIsSending] = useState(false);
@@ -1251,36 +1257,6 @@
               setIsSending(false);
           }
       };
-
-      const LikertQuestion = ({ number, title, statement, name, value, onChange }) => (
-          <div className="space-y-3 bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-100 hover:border-emerald-200 transition-colors">
-              <div className="flex items-start gap-3">
-                  <div className="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-lg flex items-center justify-center font-black flex-shrink-0 text-sm">{number}</div>
-                  <div>
-                      <h4 className="font-extrabold text-sm md:text-base text-slate-800">{title}</h4>
-                      <p className="text-xs md:text-sm text-slate-500 mt-1 font-medium">{statement}</p>
-                  </div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-4">
-                  {['Sangat Tidak Setuju', 'Tidak Setuju', 'Netral', 'Setuju', 'Sangat Setuju'].map((opt, idx) => {
-                      const score = String(idx + 1);
-                      return (
-                          <label key={score} className={`flex md:flex-col items-center justify-start md:justify-center gap-2 md:gap-1.5 p-2.5 md:p-3 border-2 rounded-xl cursor-pointer transition-all ${value === score ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-200 hover:border-emerald-300 bg-white text-slate-600'}`}>
-                              <input type="radio" name={name} required className="w-4 h-4 accent-emerald-600 flex-shrink-0" value={score} checked={value === score} onChange={(e) => onChange(e.target.value)} />
-                              <span className="font-bold text-[10px] md:text-xs text-center leading-tight">{opt}</span>
-                          </label>
-                      )
-                  })}
-              </div>
-          </div>
-      );
-
-      const SectionHeader = ({ title, desc }) => (
-          <div className="mb-3 mt-6 border-b border-slate-200 pb-2">
-              <h3 className="text-lg md:text-xl font-extrabold text-slate-800">{title}</h3>
-              <p className="text-xs md:text-sm text-slate-500 font-medium">{desc}</p>
-          </div>
-      );
 
       if (submitted) {
           return (
@@ -1485,6 +1461,7 @@
               {approvedReqs.length === 0 && <div className="col-span-full text-center py-16 md:py-24 bg-white border-2 border-dashed border-slate-200 rounded-2xl md:rounded-3xl"><FileSearch size={36} className="mx-auto text-slate-300 mb-3"/><p className="font-bold text-slate-400 text-sm">Belum ada dokumen diterbitkan.</p></div>}
             </div>
           ) : (
+            // PERBAIKAN PRATINJAU A4: Layout diperbaiki dengan overflow-scroll aman agar CSS dan Layout Tidak Berantakan
             <div className="bg-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl border border-slate-300 max-w-4xl mx-auto print:shadow-none print:border-none print:bg-white overflow-hidden w-full flex flex-col">
               
               <div className="bg-slate-800 p-3 md:p-5 flex flex-col md:flex-row justify-between items-center text-white print:hidden gap-3 w-full">
@@ -1657,7 +1634,7 @@
                   <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Modul Administrasi</p>
                   <SidebarItem icon={<FileText />} label="Pengajuan Surat" active={activeTab === 'request'} onClick={() => handleTabChange('request')} />
                   <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Dokumen" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
-
+                  
                   <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Evaluasi Data Bab 4</p>
                   <SidebarItem 
                       icon={isKuisionerUnlocked ? <MessageSquare /> : <Lock />} 
@@ -1705,10 +1682,10 @@
             {activeTab === 'ocr-santri' && <ExperimentEntryView targetType="santri" targetData={santriData} setTargetData={setSantriData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
             {activeTab === 'ocr-ustadz' && <ExperimentEntryView targetType="ustadz" targetData={ustadzData} setTargetData={setUstadzData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
             {activeTab === 'report' && <ResearchReportView researchLogs={researchLogs} showToast={showToast} />}
+            {activeTab === 'kuisioner' && <KuisionerView testerInfo={testerInfo} showToast={showToast} />}
             {activeTab === 'request' && <RequestDocumentView ustadzData={ustadzData} dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
             {activeTab === 'approval' && <ApprovalView dokumenReq={dokumenReq} setDokumenReq={setDokumenReq} showToast={showToast} />}
             {activeTab === 'arsip' && <ArsipView dokumenReq={dokumenReq} testerInfo={testerInfo} />}
-            {activeTab === 'kuisioner' && <KuisionerView testerInfo={testerInfo} showToast={showToast} />}
             
             {activeTab === 'dashboard' && (
               <div className="flex flex-col items-center justify-center min-h-[70vh] text-center text-emerald-900/60 animate-fade-in max-w-2xl mx-auto px-2">
