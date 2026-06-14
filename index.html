@@ -13,12 +13,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   
   <style>
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(16, 185, 129, 0.4); border-radius: 10px; }
-    input, select, textarea { font-size: 16px !important; } 
-    /* CSS Print yang dibersihkan dari escaped class untuk mencegah parsing error */
+    /* Transisi standar dan wajar */
+    .fade-in { animation: fadeIn 0.2s ease-in-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Scrollbar minimalis standar sistem operasi */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    input, select, textarea { font-size: 14px !important; } 
+    
+    /* CSS Print yang bersih untuk cetak A4 */
     @media print { 
       @page { size: A4 portrait; margin: 0; } 
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; } 
@@ -27,16 +34,16 @@
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="bg-slate-50 text-slate-800 text-sm font-sans antialiased">
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const FAIcon = (faClass) => ({ size = 24, color, className = "" }) => {
+    const FAIcon = (faClass) => ({ size = 16, color, className = "" }) => {
       return (
         <span className={`inline-flex items-center justify-center ${className}`} style={{ color: color, width: size, height: size }}>
-          <i className={`fa-solid ${faClass}`} style={{ fontSize: size * 0.8 }}></i>
+          <i className={`fa-solid ${faClass}`} style={{ fontSize: size * 0.85 }}></i>
         </span>
       );
     };
@@ -54,13 +61,19 @@
 
     function ToastNotification({ toast, setToast }) {
       if (!toast.show) return null;
+      const bgStyle = toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 
+                      toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 
+                      'bg-sky-50 border-sky-200 text-sky-800';
+      const iconColor = toast.type === 'error' ? 'text-red-500' : 
+                        toast.type === 'success' ? 'text-emerald-500' : 'text-sky-500';
+
       return (
-        <div className={`fixed bottom-4 right-4 md:bottom-6 md:right-6 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-2xl text-white font-bold z-[100] flex items-center gap-3 md:gap-4 animate-fade-in w-[calc(100%-2rem)] md:max-w-sm border-2 ${toast.type === 'error' ? 'bg-red-600 border-red-500 shadow-red-500/30' : toast.type === 'success' ? 'bg-emerald-600 border-emerald-500 shadow-emerald-500/30' : 'bg-blue-600 border-blue-500 shadow-blue-500/30'}`}>
-           <div className="bg-white/20 p-1.5 md:p-2 rounded-lg md:rounded-xl flex-shrink-0">
-              {toast.type === 'error' ? <AlertCircle size={18} /> : toast.type === 'success' ? <CheckCircle size={18} /> : <Activity size={18} />}
+        <div className={`fixed bottom-4 right-4 p-4 rounded border shadow-lg z-[100] flex items-start gap-3 w-[calc(100%-2rem)] md:max-w-sm fade-in ${bgStyle}`}>
+           <div className={`mt-0.5 shrink-0 ${iconColor}`}>
+              {toast.type === 'error' ? <AlertCircle size={16} /> : toast.type === 'success' ? <CheckCircle size={16} /> : <Activity size={16} />}
            </div>
-           <p className="flex-1 text-xs md:text-sm leading-snug">{toast.message}</p>
-           <button onClick={() => setToast({ show: false, message: '', type: 'info' })} className="opacity-70 hover:opacity-100 flex-shrink-0 transition bg-black/10 hover:bg-black/20 p-1 rounded-md"><X size={14}/></button>
+           <p className="flex-1 text-xs md:text-sm font-medium leading-relaxed">{toast.message}</p>
+           <button onClick={() => setToast({ show: false, message: '', type: 'info' })} className="text-slate-400 hover:text-slate-600 shrink-0"><X size={14}/></button>
         </div>
       );
     }
@@ -92,62 +105,59 @@
       };
 
       return (
-        <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] relative overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-emerald-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-64 md:w-96 h-64 md:h-96 bg-blue-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-
-          <div className="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] shadow-2xl w-full max-w-lg animate-fade-in relative z-10 border border-white/40 my-4">
-            <div className="text-center mb-6 md:mb-8">
-              <div className="bg-emerald-100/80 w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 select-none cursor-default shadow-inner border border-emerald-200" onClick={() => { const n = secretClicks + 1; if (n >= 7) setRole('admin'); else setSecretClicks(n); }}>
-                <ClipboardList color="#059669" size={32} />
+        <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
+          <div className="bg-white p-6 md:p-8 rounded border border-slate-200 shadow-sm w-full max-w-lg my-4 fade-in">
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-slate-100 mx-auto rounded flex items-center justify-center mb-3 border border-slate-200 cursor-default" onClick={() => { const n = secretClicks + 1; if (n >= 7) setRole('admin'); else setSecretClicks(n); }}>
+                <ClipboardList className="text-slate-500" size={20} />
               </div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Setup Profil Lembaga</h1>
-              <p className="text-slate-500 text-xs md:text-sm mt-2 font-medium">Data ini digunakan untuk men-generate Kop Surat secara otomatis.</p>
+              <h1 className="text-xl font-bold text-slate-800">Setup Profil Lembaga</h1>
+              <p className="text-slate-500 text-xs mt-1 font-medium">Informasi ini otomatis digunakan untuk kop surat resmi.</p>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
-              <div className="space-y-3 md:space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Lengkap Penguji <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Ahmad Subagyo" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={nama} onChange={(e) => setNama(e.target.value)} />
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap Penguji <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: Ahmad Subagyo" className="w-full bg-white border border-slate-300 px-3 py-2 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-sm transition" value={nama} onChange={(e) => setNama(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Lembaga <span className="text-slate-400 font-normal normal-case">(Tanpa TPQ/LPQ)</span> <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: Miftahul Ulum" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Lembaga (Tanpa TPQ/LPQ) <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: Miftahul Ulum" className="w-full bg-white border border-slate-300 px-3 py-2 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-sm transition" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nama Kepala TPQ <span className="text-red-500">*</span></label>
-                  <input type="text" required placeholder="Contoh: K.H. Zainudin" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={namaKepala} onChange={(e) => setNamaKepala(e.target.value)} />
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Kepala TPQ <span className="text-red-500">*</span></label>
+                  <input type="text" required placeholder="Contoh: K.H. Zainudin" className="w-full bg-white border border-slate-300 px-3 py-2 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-sm transition" value={namaKepala} onChange={(e) => setNamaKepala(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nomor Ijop</label>
-                    <input type="text" placeholder="Opsional" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={nomorIjop} onChange={(e) => setNomorIjop(e.target.value)} />
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor Ijop</label>
+                    <input type="text" placeholder="Opsional" className="w-full bg-white border border-slate-300 px-3 py-2 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-sm transition" value={nomorIjop} onChange={(e) => setNomorIjop(e.target.value)} />
                   </div>
                   <div>
-                    <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Nomor Statistik</label>
-                    <input type="text" placeholder="Opsional" className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium text-sm md:text-base" value={nomorStatistik} onChange={(e) => setNomorStatistik(e.target.value)} />
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor Statistik</label>
+                    <input type="text" placeholder="Opsional" className="w-full bg-white border border-slate-300 px-3 py-2 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-sm transition" value={nomorStatistik} onChange={(e) => setNomorStatistik(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1 md:mb-1.5 uppercase tracking-wider">Alamat Sekretariat Lengkap <span className="text-red-500">*</span></label>
-                  <textarea required placeholder="Jalan, RT/RW, Desa, Kec, Kab..." className="w-full bg-slate-50 border border-slate-200 p-3 md:p-3.5 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition font-medium resize-none h-20 md:h-24 text-sm md:text-base" value={alamat} onChange={(e) => setAlamat(e.target.value)}></textarea>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat Sekretariat Lengkap <span className="text-red-500">*</span></label>
+                  <textarea required placeholder="Jalan, RT/RW, Desa, Kec, Kab..." className="w-full bg-white border border-slate-300 px-3 py-2 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none resize-none h-20 text-sm transition" value={alamat} onChange={(e) => setAlamat(e.target.value)}></textarea>
                 </div>
                 <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-700 mb-1.5 md:mb-2 uppercase tracking-wider">Logo Lembaga <span className="text-slate-400 font-normal normal-case">(Opsional)</span></label>
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {logo ? <img src={logo} className="w-full h-full object-contain"/> : <Upload color="#94a3b8" size={20} />}
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Logo Lembaga (Opsional)</label>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded border border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                      {logo ? <img src={logo} className="w-full h-full object-contain bg-white"/> : <Upload className="text-slate-400" size={16} />}
                     </div>
-                    <label className="flex-1 cursor-pointer bg-slate-50 border border-slate-200 hover:bg-slate-100 p-3 rounded-xl text-xs md:text-sm font-semibold text-slate-600 text-center transition">
-                      Pilih File Logo
+                    <label className="cursor-pointer bg-slate-50 border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded text-xs font-medium text-slate-700 transition">
+                      Pilih File Gambar
                       <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                     </label>
                   </div>
                 </div>
               </div>
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 md:py-4 rounded-xl shadow-lg shadow-emerald-600/30 mt-6 md:mt-8 transition-transform hover:-translate-y-1 text-sm md:text-base">
-                Lanjutkan ke Sistem
+              <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded transition text-sm shadow-sm">
+                Masuk ke Aplikasi
               </button>
             </form>
           </div>
@@ -157,35 +167,33 @@
 
     function LoginScreen({ setRole, testerInfo }) {
       return (
-        <div className="min-h-[100dvh] bg-slate-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-emerald-600/30 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-
-          <div className="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2rem] shadow-2xl w-full max-w-md text-center animate-fade-in relative z-10">
-            <div className="bg-emerald-100/80 w-24 h-24 md:w-28 md:h-28 mx-auto rounded-full flex items-center justify-center mb-4 md:mb-6 shadow-inner overflow-hidden border-4 border-white">
-              {testerInfo.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain bg-white" /> : <ShieldCheck color="#059669" size={48} />}
+        <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
+          <div className="bg-white p-6 md:p-8 rounded border border-slate-200 shadow-sm w-full max-w-sm text-center fade-in">
+            <div className="w-16 h-16 mx-auto rounded border border-slate-200 bg-slate-50 flex items-center justify-center mb-4 overflow-hidden">
+              {testerInfo.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain bg-white" /> : <ShieldCheck className="text-emerald-700" size={24} />}
             </div>
-            <h1 className="text-xl md:text-2xl font-extrabold text-slate-800 mb-1 px-2 leading-tight">{testerInfo.lembaga}</h1>
-            <p className="text-emerald-600 text-xs md:text-sm font-bold mb-6 md:mb-8 tracking-wide">Penguji: {testerInfo.nama}</p>
+            <h1 className="text-lg font-bold text-slate-800 leading-tight">{testerInfo.lembaga}</h1>
+            <p className="text-slate-500 text-xs font-semibold mb-6 mt-1">Penguji: {testerInfo.nama}</p>
             
-            <div className="space-y-3 md:space-y-4">
-              <button onClick={() => setRole('operator')} className="w-full flex items-center p-3 md:p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 transition-all group">
-                <div className="bg-blue-50 p-3 md:p-4 rounded-xl group-hover:bg-blue-500 transition-all duration-300 flex-shrink-0"><User className="text-blue-600 group-hover:text-white" size={24} /></div>
-                <div className="ml-4 md:ml-5 text-left"><h3 className="font-extrabold text-slate-800 text-base md:text-lg">Staf Operator</h3><p className="text-[10px] md:text-xs text-slate-500 font-medium">Uji Coba Entri Data OCR Gemini</p></div>
+            <div className="space-y-2">
+              <button onClick={() => setRole('operator')} className="w-full flex items-center p-3 bg-white border border-slate-200 rounded hover:border-emerald-600 hover:bg-slate-50 transition text-left group">
+                <div className="bg-slate-100 group-hover:bg-emerald-50 p-2.5 rounded shrink-0 transition"><User className="text-slate-600 group-hover:text-emerald-700" size={18} /></div>
+                <div className="ml-3"><h3 className="font-semibold text-slate-800 text-sm">Staf Operator</h3><p className="text-xs text-slate-500">Eksperimen Entri Data OCR</p></div>
               </button>
               
-              <button onClick={() => setRole('kepala')} className="w-full flex items-center p-3 md:p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-purple-500 transition-all group">
-                <div className="bg-purple-50 p-3 md:p-4 rounded-xl group-hover:bg-purple-500 transition-all duration-300 flex-shrink-0"><CheckCircle className="text-purple-600 group-hover:text-white" size={24} /></div>
-                <div className="ml-4 md:ml-5 text-left"><h3 className="font-extrabold text-slate-800 text-base md:text-lg">Pimpinan LPQ</h3><p className="text-[10px] md:text-xs text-slate-500 font-medium">Tanda Tangan & Persetujuan</p></div>
+              <button onClick={() => setRole('kepala')} className="w-full flex items-center p-3 bg-white border border-slate-200 rounded hover:border-emerald-600 hover:bg-slate-50 transition text-left group">
+                <div className="bg-slate-100 group-hover:bg-emerald-50 p-2.5 rounded shrink-0 transition"><CheckCircle className="text-slate-600 group-hover:text-emerald-700" size={18} /></div>
+                <div className="ml-3"><h3 className="font-semibold text-slate-800 text-sm">Pimpinan LPQ</h3><p className="text-xs text-slate-500">Tanda Tangan & Persetujuan</p></div>
               </button>
 
-              <div className="relative py-3 md:py-4">
+              <div className="relative py-3">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
-                <div className="relative flex justify-center"><span className="bg-white px-4 text-[9px] md:text-[10px] text-slate-400 font-black tracking-widest">AKSES PUBLIK</span></div>
+                <div className="relative flex justify-center"><span className="bg-white px-3 text-[10px] text-slate-400 font-bold tracking-wider uppercase">Layanan Publik</span></div>
               </div>
 
-              <button onClick={() => setRole('public')} className="w-full flex items-center p-3 md:p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl hover:bg-slate-100 transition-all group">
-                <div className="bg-white p-2.5 md:p-3 rounded-xl shadow-sm border border-slate-100 flex-shrink-0"><QrCode className="text-slate-700" size={20} /></div>
-                <div className="ml-3 md:ml-4 text-left"><h3 className="font-bold text-slate-700 text-sm md:text-base">Verifikasi Dokumen</h3><p className="text-[10px] md:text-xs text-slate-500">Scan QR Code Surat Valid</p></div>
+              <button onClick={() => setRole('public')} className="w-full flex items-center p-3 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 transition text-left group">
+                <div className="bg-white p-2 rounded border border-slate-200 shrink-0"><QrCode className="text-slate-600" size={16} /></div>
+                <div className="ml-3"><h3 className="font-semibold text-slate-700 text-sm">Verifikasi Dokumen</h3><p className="text-xs text-slate-500">Validasi Kode QR Surat</p></div>
               </button>
             </div>
           </div>
@@ -201,51 +209,46 @@
         e.preventDefault();
         const docs = JSON.parse(localStorage.getItem('GLOBAL_DOCS') || '[]');
         const found = docs.find(d => d.docId === docId && d.status === 'Disetujui');
-        
-        if (found) {
-            setResult({ valid: true, data: found });
-        } else {
-            setResult({ valid: false });
-        }
+        setResult(found ? { valid: true, data: found } : { valid: false });
       };
 
       return (
-        <div className="min-h-[100dvh] bg-slate-50 flex flex-col items-center justify-center p-4 relative">
-          <button onClick={() => setRole(null)} className="absolute top-6 left-6 flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 transition">
-             <ArrowLeft size={16} /> Kembali
+        <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 relative">
+          <button onClick={() => setRole(null)} className="absolute top-4 left-4 flex items-center gap-2 text-slate-600 hover:text-slate-800 font-semibold bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm transition">
+             <ArrowLeft size={14} /> Kembali
           </button>
 
-          <div className="bg-white p-6 md:p-10 rounded-[2rem] shadow-xl w-full max-w-md text-center animate-fade-in border border-slate-200 relative z-10">
-            <div className="bg-slate-100 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6 shadow-inner text-slate-600">
-               <QrCode size={40} />
+          <div className="bg-white p-6 md:p-8 rounded border border-slate-200 shadow-sm w-full max-w-md text-center fade-in">
+            <div className="w-14 h-14 bg-slate-100 mx-auto rounded flex items-center justify-center mb-4 border text-slate-600">
+               <QrCode size={24} />
             </div>
-            <h1 className="text-2xl font-black text-slate-800 mb-2">Verifikasi Dokumen</h1>
-            <p className="text-slate-500 text-sm font-medium mb-8">Masukkan ID Dokumen (kode di bawah Tanda Tangan Pimpinan) untuk memeriksa keasliannya.</p>
+            <h1 className="text-lg font-bold text-slate-800 mb-1">Verifikasi Dokumen</h1>
+            <p className="text-slate-500 text-xs font-medium mb-6">Masukkan ID dokumen di bawah tanda tangan untuk verifikasi.</p>
             
-            <form onSubmit={handleVerify} className="space-y-4">
-              <input type="text" required placeholder="Contoh: DOC-LPQ-1A2B3C" value={docId} onChange={(e) => setDocId(e.target.value.toUpperCase())} className="w-full text-center text-lg font-mono font-bold bg-slate-50 border-2 border-slate-200 p-4 rounded-xl focus:border-blue-500 focus:bg-white outline-none uppercase transition" />
-              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/30 transition-transform hover:-translate-y-1">Cek Keaslian Sekarang</button>
+            <form onSubmit={handleVerify} className="space-y-3">
+              <input type="text" required placeholder="Contoh: DOC-LPQ-1A2B3C" value={docId} onChange={(e) => setDocId(e.target.value.toUpperCase())} className="w-full text-center font-mono font-bold bg-slate-50 border border-slate-300 p-2.5 rounded focus:border-emerald-600 focus:bg-white outline-none uppercase transition text-sm" />
+              <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded transition text-sm shadow-sm">Cek Keaslian Dokumen</button>
             </form>
 
             {result !== null && (
-               <div className={`mt-8 p-6 rounded-2xl border-2 text-left animate-fade-in ${result.valid ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+               <div className={`mt-6 p-4 rounded border text-left text-xs fade-in ${result.valid ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
                   {result.valid ? (
-                      <div>
-                         <div className="flex items-center gap-2 text-emerald-700 mb-4 pb-4 border-b border-emerald-200/50">
-                            <CheckCircle size={24} /> <h3 className="font-black text-lg">DOKUMEN VALID</h3>
+                      <div className="space-y-3">
+                         <div className="flex items-center gap-2 font-bold text-sm text-emerald-900 border-b border-emerald-200/50 pb-2">
+                            <CheckCircle size={16} /> <span>DOKUMEN VALID</span>
                          </div>
-                         <div className="space-y-3">
-                            <div><p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">ID Dokumen</p><p className="font-mono font-bold text-slate-800">{result.data.docId}</p></div>
-                            <div><p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Jenis Surat</p><p className="font-bold text-slate-800">{result.data.jenis}</p></div>
-                            <div><p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Atas Nama</p><p className="font-bold text-slate-800">{result.data.nama}</p></div>
-                            <div><p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Status Keaslian</p><p className="text-sm font-bold text-white bg-emerald-600 px-3 py-1 rounded-full w-max mt-1">SAH DITANDATANGANI SECARA ELEKTRONIK</p></div>
+                         <div className="grid grid-cols-1 gap-2">
+                            <div><p className="text-[10px] text-slate-500 font-semibold uppercase">ID Dokumen</p><p className="font-mono font-semibold">{result.data.docId}</p></div>
+                            <div><p className="text-[10px] text-slate-500 font-semibold uppercase">Jenis Surat</p><p className="font-medium">{result.data.jenis}</p></div>
+                            <div><p className="text-[10px] text-slate-500 font-semibold uppercase">Atas Nama</p><p className="font-semibold">{result.data.nama}</p></div>
+                            <div><span className="inline-block text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded font-bold uppercase mt-1">SAH SECARA ELEKTRONIK</span></div>
                          </div>
                       </div>
                   ) : (
-                      <div className="text-center text-red-700">
-                         <X size={40} className="mx-auto mb-3 text-red-500" />
-                         <h3 className="font-black text-lg mb-2">DOKUMEN TIDAK DITEMUKAN</h3>
-                         <p className="text-sm font-medium">ID Dokumen yang Anda masukkan salah atau dokumen tersebut palsu / tidak tercatat di pangkalan data.</p>
+                      <div className="text-center py-2">
+                         <X size={24} className="mx-auto mb-2 text-red-500" />
+                         <h3 className="font-bold text-red-900 text-sm mb-1">DOKUMEN PALSU ATAU TIDAK ADA</h3>
+                         <p className="text-slate-500 font-medium leading-relaxed">ID tersebut tidak terdaftar di sistem. Harap pastikan kembali ejaan karakter kode.</p>
                       </div>
                   )}
                </div>
@@ -269,11 +272,10 @@
                 });
                 
                 if (!response.ok) throw new Error("HTTP Error " + response.status);
-                
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    if (!result?.data) throw new Error("Sistem belum di-Deploy 'New Version'.");
+                    if (!result?.data) throw new Error("Sistem belum di-Deploy.");
                     setGlobalStats({ 
                         isLoading: false, 
                         totalPenguji: result.data.totalPenguji, 
@@ -285,13 +287,12 @@
                     setIsGlobal(true);
                     return; 
                 } else {
-                    throw new Error(result.error || "Error dari server backend GAS");
+                    throw new Error(result.error || "Gagal sinkron server.");
                 }
             } catch (error) {
-                console.warn("Gagal mengambil dari spreadsheet, menggunakan fallback lokal:", error);
+                console.warn("Spreadsheet offline, menggunakan database lokal:", error);
             }
 
-            // Fallback Lokal
             const logs = JSON.parse(localStorage.getItem('GLOBAL_RESEARCH_LOGS') || '[]');
             const uniqueTesters = new Set(logs.map(l => l.tester)).size;
             const ocrLogs = logs.filter(l => l.method === 'OCR Gemini AI');
@@ -310,80 +311,67 @@
       }, []);
 
       return (
-        <div className="space-y-6 md:space-y-8 animate-fade-in pb-10">
-          <header className="mb-2 md:mb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+        <div className="space-y-5 fade-in pb-10">
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-2 border-b border-slate-200 pb-3">
             <div>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Dashboard Pusat Riset</h2>
-              <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Pemantauan metrik riset secara global (Tersinkronisasi via Pangkalan Data).</p>
+              <h2 className="text-xl font-bold text-slate-800">Dashboard Riset</h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Analisis kecepatan entri metode input konvensional vs kecerdasan buatan.</p>
             </div>
             {globalStats.isLoading ? (
-               <span className="bg-slate-100 text-slate-500 px-3 py-2 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-2 w-max"><RefreshCw size={14} className="animate-spin"/> Memuat Data...</span>
+               <span className="bg-slate-100 border border-slate-200 text-slate-600 px-3 py-1 rounded text-xs font-semibold flex items-center gap-1.5"><RefreshCw size={12} className="animate-spin"/> Menghubungkan...</span>
             ) : isGlobal ? (
-               <span className="bg-emerald-100 text-emerald-700 px-3 py-2 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-2 w-max"><Server size={14}/> Live: Terkoneksi Global</span>
+               <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1 rounded text-xs font-semibold flex items-center gap-1.5"><Server size={12}/> Sinkronisasi Global</span>
             ) : (
-               <span className="bg-orange-100 text-orange-700 px-3 py-2 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-2 w-max"><Database size={14}/> Mode Offline (Lokal)</span>
+               <span className="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded text-xs font-semibold flex items-center gap-1.5"><Database size={12}/> Mode Data Lokal</span>
             )}
           </header>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-5">
-            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-slate-100 flex flex-col relative overflow-hidden">
-              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
-                <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Partisipan / Akun</p>
-                <div className="bg-indigo-100 p-1.5 md:p-2 rounded-lg hidden md:block"><Users color="#4f46e5" size={16}/></div>
-              </div>
-              <p className="text-2xl md:text-4xl font-black text-slate-800 relative z-10">{globalStats.totalPenguji}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Partisipan Akun</p>
+              <p className="text-2xl font-bold text-slate-800">{globalStats.totalPenguji}</p>
             </div>
 
-            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-blue-200 flex flex-col relative overflow-hidden">
-              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
-                <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Total Entri Data</p>
-                <div className="bg-blue-100 p-1.5 md:p-2 rounded-lg hidden md:block"><FileText color="#2563eb" size={16}/></div>
-              </div>
-              <p className="text-2xl md:text-4xl font-black text-slate-800 relative z-10">{globalStats.totalEksperimen}</p>
+            <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Eksperimen</p>
+              <p className="text-2xl font-bold text-slate-800">{globalStats.totalEksperimen}</p>
             </div>
 
-            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-emerald-100 flex flex-col relative overflow-hidden col-span-2 md:col-span-1">
-              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
-                <p className="text-[10px] md:text-xs font-bold text-emerald-600 uppercase tracking-widest">Avg. Gemini AI</p>
-                <div className="bg-emerald-100 p-1.5 md:p-2 rounded-lg hidden md:block"><Timer color="#059669" size={16}/></div>
-              </div>
-              <p className="text-2xl md:text-3xl font-black text-emerald-700 relative z-10">{globalStats.avgOcr}<span className="text-sm md:text-base ml-1 text-emerald-500 font-bold">s</span></p>
+            <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Rata-rata OCR AI</p>
+              <p className="text-2xl font-bold text-emerald-700">{globalStats.avgOcr}<span className="text-xs ml-1 text-slate-400 font-medium">detik</span></p>
             </div>
 
-            <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-orange-100 flex flex-col relative overflow-hidden col-span-2 md:col-span-1">
-              <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
-                <p className="text-[10px] md:text-xs font-bold text-orange-600 uppercase tracking-widest">Avg. Manual</p>
-                <div className="bg-orange-100 p-1.5 md:p-2 rounded-lg hidden md:block"><User color="#ea580c" size={16}/></div>
-              </div>
-              <p className="text-2xl md:text-3xl font-black text-orange-700 relative z-10">{globalStats.avgManual}<span className="text-sm md:text-base ml-1 text-orange-500 font-bold">s</span></p>
+            <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+              <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">Rata-rata Manual</p>
+              <p className="text-2xl font-bold text-amber-700">{globalStats.avgManual}<span className="text-xs ml-1 text-slate-400 font-medium">detik</span></p>
             </div>
           </div>
           
-          <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 overflow-hidden mt-6 md:mt-8">
-             <div className="bg-slate-50/50 p-4 md:p-6 border-b border-slate-100 font-bold text-sm md:text-base text-slate-800 flex items-center gap-2 md:gap-3">
-                <div className="bg-white p-1.5 md:p-2 rounded shadow-sm border"><LineChart size={16} className="text-slate-600" /></div> 
-                Komparasi Kecepatan Eksekusi Global
+          <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
+             <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 font-semibold text-slate-700 text-xs md:text-sm flex items-center gap-2">
+                <LineChart size={14} className="text-slate-500" /> Komparasi Visual Waktu Eksekusi
              </div>
-             <div className="p-5 md:p-10 flex flex-col items-center justify-center min-h-[200px] md:min-h-[250px]">
-                {globalStats.avgOcr > 0 || globalStats.avgManual > 0 || globalStats.avgImport > 0 ? (
-                   <div className="w-full max-w-3xl space-y-6 md:space-y-8">
+             <div className="p-6 flex flex-col items-center justify-center min-h-[180px]">
+                {globalStats.avgOcr > 0 || globalStats.avgManual > 0 ? (
+                   <div className="w-full max-w-xl space-y-4 text-xs">
                       {globalStats.avgOcr > 0 && (
                         <div>
-                           <div className="flex justify-between text-xs md:text-sm font-extrabold text-emerald-700 mb-2 md:mb-3 uppercase tracking-wide"><span>Otomasi (OCR Gemini AI)</span><span>{globalStats.avgOcr} detik</span></div>
-                           <div className="w-full bg-slate-100 rounded-full h-4 md:h-6 p-0.5 md:p-1 shadow-inner"><div className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgOcr / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
+                           <div className="flex justify-between font-semibold text-emerald-800 mb-1"><span>Asisten AI Gemini OCR</span><span>{globalStats.avgOcr} detik</span></div>
+                           <div className="w-full bg-slate-100 border border-slate-200 rounded h-3 overflow-hidden"><div className="bg-emerald-600 h-full transition-all" style={{ width: `${(globalStats.avgOcr / Math.max(globalStats.avgOcr, globalStats.avgManual)) * 100}%` }}></div></div>
                         </div>
                       )}
                       {globalStats.avgManual > 0 && (
                         <div>
-                           <div className="flex justify-between text-xs md:text-sm font-extrabold text-orange-700 mb-2 md:mb-3 uppercase tracking-wide"><span>Ketik Konvensional (Manual)</span><span>{globalStats.avgManual} detik</span></div>
-                           <div className="w-full bg-slate-100 rounded-full h-4 md:h-6 p-0.5 md:p-1 shadow-inner"><div className="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-1000 shadow-sm" style={{ width: `${(globalStats.avgManual / Math.max(globalStats.avgOcr, globalStats.avgManual, globalStats.avgImport)) * 100}%` }}></div></div>
+                           <div className="flex justify-between font-semibold text-slate-800 mb-1"><span>Ketik Manual (Konvensional)</span><span>{globalStats.avgManual} detik</span></div>
+                           <div className="w-full bg-slate-100 border border-slate-200 rounded h-3 overflow-hidden"><div className="bg-slate-500 h-full transition-all" style={{ width: `${(globalStats.avgManual / Math.max(globalStats.avgOcr, globalStats.avgManual)) * 100}%` }}></div></div>
                         </div>
                       )}
                    </div>
                 ) : (
-                   <div className="text-center text-slate-400 p-4">
-                     <FileSearch size={36} className="mx-auto mb-3 md:mb-4 opacity-50" />
-                     <p className="font-semibold text-sm md:text-base">Belum ada data komparasi.</p>
+                   <div className="text-center text-slate-400">
+                     <FileSearch size={24} className="mx-auto mb-2 opacity-60" />
+                     <p className="text-xs font-semibold">Belum terdapat data log simulasi untuk dibandingkan.</p>
                    </div>
                 )}
              </div>
@@ -429,30 +417,32 @@
             }
         };
 
+        const fieldClass = "w-full bg-white border border-slate-300 px-3 py-2 rounded focus:border-emerald-600 focus:outline-none text-xs disabled:bg-slate-100 disabled:text-slate-500 transition";
+
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-2">
-                <select value={formData[getField('provinsi')] || ''} onChange={(e) => handleChange(e, 'provinsi')} className={`w-full bg-white border ${!formData[getField('provinsi')] ? 'border-red-300' : 'border-slate-300'} p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm`}>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                <select value={formData[getField('provinsi')] || ''} onChange={(e) => handleChange(e, 'provinsi')} className={`${fieldClass} ${!formData[getField('provinsi')] ? 'border-red-300' : ''}`}>
                     <option value="">-- Pilih Provinsi * --</option>
                     {provinces.map(p => <option key={p.id} data-id={p.id} value={p.name}>{p.name}</option>)}
                 </select>
-                <select value={formData[getField('kabupaten')] || ''} onChange={(e) => handleChange(e, 'kabupaten')} disabled={!regencies.length} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm disabled:opacity-50 bg-slate-50">
+                <select value={formData[getField('kabupaten')] || ''} onChange={(e) => handleChange(e, 'kabupaten')} disabled={!regencies.length} className={fieldClass}>
                     <option value="">-- Pilih Kab/Kota --</option>
                     {regencies.map(r => <option key={r.id} data-id={r.id} value={r.name}>{r.name}</option>)}
                 </select>
-                <select value={formData[getField('kecamatan')] || ''} onChange={(e) => handleChange(e, 'kecamatan')} disabled={!districts.length} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm disabled:opacity-50 bg-slate-50">
+                <select value={formData[getField('kecamatan')] || ''} onChange={(e) => handleChange(e, 'kecamatan')} disabled={!districts.length} className={fieldClass}>
                     <option value="">-- Pilih Kecamatan --</option>
                     {districts.map(d => <option key={d.id} data-id={d.id} value={d.name}>{d.name}</option>)}
                 </select>
-                <select value={formData[getField('desa')] || ''} onChange={(e) => handleChange(e, 'desa')} disabled={!villages.length} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm disabled:opacity-50 bg-slate-50">
-                    <option value="">-- Pilih Desa --</option>
+                <select value={formData[getField('desa')] || ''} onChange={(e) => handleChange(e, 'desa')} disabled={!villages.length} className={fieldClass}>
+                    <option value="">-- Pilih Desa/Kelurahan --</option>
                     {villages.map(v => <option key={v.id} data-id={v.id} value={v.name}>{v.name}</option>)}
                 </select>
-                <div className="col-span-1 lg:col-span-1 flex gap-2">
-                  <input type="text" placeholder="RT" value={formData[getField('rt')] || ''} onChange={(e) => handleChange(e, 'rt')} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
-                  <input type="text" placeholder="RW" value={formData[getField('rw')] || ''} onChange={(e) => handleChange(e, 'rw')} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
+                <div className="col-span-1 flex gap-2">
+                  <input type="text" placeholder="RT" value={formData[getField('rt')] || ''} onChange={(e) => handleChange(e, 'rt')} className={fieldClass} />
+                  <input type="text" placeholder="RW" value={formData[getField('rw')] || ''} onChange={(e) => handleChange(e, 'rw')} className={fieldClass} />
                 </div>
-                <input type="text" placeholder="Jalan / Gang / Dusun (Detail) *" value={formData[getField('alamatLengkap')] || ''} onChange={(e) => handleChange(e, 'alamatLengkap')} className={`col-span-1 md:col-span-2 w-full bg-white border ${!formData[getField('alamatLengkap')] ? 'border-red-300' : 'border-slate-300'} p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm`} />
-                <input type="text" placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={(e) => handleChange(e, 'kodePos')} className="col-span-1 lg:col-span-1 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm" />
+                <input type="text" placeholder="Detail Alamat (Jalan/Dusun) *" value={formData[getField('alamatLengkap')] || ''} onChange={(e) => handleChange(e, 'alamatLengkap')} className={`${fieldClass} md:col-span-2 ${!formData[getField('alamatLengkap')] ? 'border-red-300' : ''}`} />
+                <input type="text" placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={(e) => handleChange(e, 'kodePos')} className={fieldClass} />
             </div>
         );
     }
@@ -466,8 +456,9 @@
       const pendapatanOptions = ['Tidak Berpenghasilan / Tidak Tahu', '< Rp 1.000.000', 'Rp 1.000.001 - Rp 2.000.000', 'Rp 2.000.001 - Rp 3.000.000', 'Rp 3.000.001 - Rp 4.000.000', 'Rp 4.000.001 - Rp 5.000.000', '> Rp 5.000.000'];
       const agamaOptions = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Lainnya'];
 
+      const fieldClass = (name, required) => `w-full bg-white border ${required && !formData[name] ? 'border-red-300' : 'border-slate-300'} px-3 py-1.5 rounded focus:border-emerald-600 focus:outline-none text-xs transition`;
+
       const renderDateInput = (name, label, required = false) => {
-          // Fungsi untuk format tanggal menjadi DD/MM/YYYY saat diketik
           const handleDateChange = (e) => {
               let val = e.target.value.replace(/\D/g, ''); 
               if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
@@ -477,7 +468,7 @@
           
           return (
             <div>
-               <label className="block text-[10px] md:text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label} {required && <span className="text-red-500">*</span>}</label>
+               <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">{label} {required && <span className="text-red-500">*</span>}</label>
                <input 
                   type="text" 
                   placeholder="DD/MM/YYYY" 
@@ -485,7 +476,7 @@
                   value={formData[name] || ''} 
                   onChange={handleDateChange} 
                   maxLength="10" 
-                  className={`w-full bg-white border ${required && !formData[name] ? 'border-red-300' : 'border-slate-300'} p-3 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium`} 
+                  className={fieldClass(name, required)} 
                />
             </div>
           );
@@ -493,15 +484,15 @@
 
       const renderInput = (name, label, placeholder = "", required = false) => (
         <div>
-           <label className="block text-[10px] md:text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label} {required && <span className="text-red-500">*</span>}</label>
-           <input type="text" name={name} placeholder={placeholder} value={formData[name] || ''} onChange={handleChange} className={`w-full bg-white border ${required && !formData[name] ? 'border-red-300' : 'border-slate-300'} p-3 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium`} />
+           <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">{label} {required && <span className="text-red-500">*</span>}</label>
+           <input type="text" name={name} placeholder={placeholder} value={formData[name] || ''} onChange={handleChange} className={fieldClass(name, required)} />
         </div>
       );
 
       const renderSelect = (name, label, options, required = false) => (
         <div>
-           <label className="block text-[10px] md:text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label} {required && <span className="text-red-500">*</span>}</label>
-           <select name={name} value={formData[name] || ''} onChange={handleChange} className={`w-full bg-white border ${required && !formData[name] ? 'border-red-300' : 'border-slate-300'} p-3 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium`}>
+           <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">{label} {required && <span className="text-red-500">*</span>}</label>
+           <select name={name} value={formData[name] || ''} onChange={handleChange} className={fieldClass(name, required)}>
               <option value="">-- Pilih --</option>
               {options.map(o => <option key={o} value={o}>{o}</option>)}
            </select>
@@ -511,43 +502,43 @@
       const renderAddressOCR = (prefix = '') => {
         const getField = (field) => prefix ? `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}` : field;
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-2">
-                <input name={getField('provinsi')} placeholder="Provinsi *" value={formData[getField('provinsi')] || ''} onChange={handleChange} className={`w-full bg-white border ${!formData[getField('provinsi')] ? 'border-red-300' : 'border-slate-300'} p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium`} />
-                <input name={getField('kabupaten')} placeholder="Kabupaten" value={formData[getField('kabupaten')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
-                <input name={getField('kecamatan')} placeholder="Kecamatan" value={formData[getField('kecamatan')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
-                <input name={getField('desa')} placeholder="Desa/Kelurahan" value={formData[getField('desa')] || ''} onChange={handleChange} className="w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
-                <div className="col-span-1 lg:col-span-1 flex gap-2">
-                    <input name={getField('rt')} placeholder="RT" value={formData[getField('rt')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
-                    <input name={getField('rw')} placeholder="RW" value={formData[getField('rw')] || ''} onChange={handleChange} className="w-1/2 bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                <input name={getField('provinsi')} placeholder="Provinsi *" value={formData[getField('provinsi')] || ''} onChange={handleChange} className={fieldClass(getField('provinsi'), true)} />
+                <input name={getField('kabupaten')} placeholder="Kabupaten" value={formData[getField('kabupaten')] || ''} onChange={handleChange} className={fieldClass(getField('kabupaten'), false)} />
+                <input name={getField('kecamatan')} placeholder="Kecamatan" value={formData[getField('kecamatan')] || ''} onChange={handleChange} className={fieldClass(getField('kecamatan'), false)} />
+                <input name={getField('desa')} placeholder="Desa/Kelurahan" value={formData[getField('desa')] || ''} onChange={handleChange} className={fieldClass(getField('desa'), false)} />
+                <div className="col-span-1 flex gap-2">
+                    <input name={getField('rt')} placeholder="RT" value={formData[getField('rt')] || ''} onChange={handleChange} className={fieldClass(getField('rt'), false)} />
+                    <input name={getField('rw')} placeholder="RW" value={formData[getField('rw')] || ''} onChange={handleChange} className={fieldClass(getField('rw'), false)} />
                 </div>
-                <input name={getField('alamatLengkap')} placeholder="Jalan / Dusun (Detail Lengkap) *" value={formData[getField('alamatLengkap')] || ''} onChange={handleChange} className={`col-span-1 md:col-span-2 w-full bg-white border ${!formData[getField('alamatLengkap')] ? 'border-red-300' : 'border-slate-300'} p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium`} />
-                <input name={getField('kodePos')} placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={handleChange} className="col-span-1 lg:col-span-1 w-full bg-white border border-slate-300 p-3 md:p-2.5 rounded-xl focus:border-emerald-500 outline-none text-xs md:text-sm font-medium" />
+                <input name={getField('alamatLengkap')} placeholder="Detail Alamat (Jalan/Dusun) *" value={formData[getField('alamatLengkap')] || ''} onChange={handleChange} className={`${fieldClass(getField('alamatLengkap'), true)} md:col-span-2`} />
+                <input name={getField('kodePos')} placeholder="Kode Pos" value={formData[getField('kodePos')] || ''} onChange={handleChange} className={fieldClass(getField('kodePos'), false)} />
             </div>
         );
       };
 
       return (
-        <form onSubmit={handleSave} className="space-y-4 md:space-y-6 animate-fade-in w-full">
+        <form onSubmit={handleSave} className="space-y-4 w-full text-xs">
           {formData.statusValidasi && (
-            <div className="bg-amber-50 p-3 md:p-4 border border-amber-200 text-amber-900 rounded-xl text-xs md:text-sm flex items-start gap-2 md:gap-3 shadow-inner">
-               <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" /> 
+            <div className="bg-amber-50 p-3 border border-amber-200 text-amber-900 rounded text-xs flex items-start gap-2 shadow-sm">
+               <AlertCircle size={14} className="text-amber-600 shrink-0 mt-0.5" /> 
                <div>
-                  <b className="block mb-0.5">Validasi Diperlukan</b>
+                  <b className="block mb-0.5">Konfirmasi Data Hasil Ekstraksi</b>
                   {formData.statusValidasi}
                </div>
             </div>
           )}
           
-          <div className="bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
-             <div className="flex justify-between items-center mb-4 md:mb-5">
-                <h4 className="font-extrabold text-slate-700 flex items-center gap-2 text-sm md:text-base"><User size={16}/> Data Pribadi {isSantri ? 'Santri' : 'Ustadz'}</h4>
+          <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+             <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                <h4 className="font-bold text-slate-700 flex items-center gap-1.5"><User size={14}/> Identitas Diri ({isSantri ? 'Santri' : 'Ustadz'})</h4>
                 <p className="text-[10px] text-red-500 font-bold">* Wajib diisi</p>
              </div>
              
              {isSantri ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                    {renderInput('noKk', 'Nomor Kartu Keluarga (KK)', '16 Digit Angka')}
-                    {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit Angka', true)}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {renderInput('noKk', 'Nomor Kartu Keluarga (KK)', '16 Digit KK')}
+                    {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit NIK', true)}
                     {renderInput('nama', 'Nama Lengkap', '', true)}
                     {renderInput('tempatLahir', 'Tempat Lahir', '', true)}
                     {renderDateInput('tglLahir', 'Tanggal Lahir', true)}
@@ -555,89 +546,89 @@
                     {renderSelect('agama', 'Agama (Sesuai KK)', agamaOptions, true)}
                  </div>
              ) : (
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {renderInput('gelarDepan', 'Gelar Depan')}
                     {renderInput('nama', 'Nama Lengkap (Tanpa Gelar)', '', true)}
                     {renderInput('gelarBelakang', 'Gelar Belakang')}
                     
-                    <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 border-t pt-4 border-slate-200">
-                        {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit Angka', true)}
+                    <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-3 border-t pt-3 border-slate-100">
+                        {renderInput('nik', 'Nomor Induk Kependudukan (NIK)', '16 Digit NIK', true)}
                         {renderInput('tempatLahir', 'Tempat Lahir', '', true)}
                         {renderDateInput('tglLahir', 'Tanggal Lahir', true)}
                         {renderSelect('jenisKelamin', 'Jenis Kelamin', ['Laki-laki', 'Perempuan'], true)}
                         {renderSelect('agama', 'Agama (Sesuai KTP)', agamaOptions, true)}
                         {renderSelect('golonganDarah', 'Golongan Darah', golDarahOptions)}
-                        {renderInput('pekerjaan', 'Pekerjaan (Sesuai KTP)')}
+                        {renderInput('pekerjaan', 'Pekerjaan')}
                     </div>
                  </div>
              )}
 
-             <div className="mt-5 md:mt-6 md:col-span-2">
-                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wide">Alamat & Detail Geografis <span className="text-red-500">*</span></label>
+             <div className="mt-4 pt-3 border-t border-slate-100">
+                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wider">Lokasi Domisili & Transportasi <span className="text-red-500">*</span></label>
                  {entryMethod === 'manual' ? <AddressCascader formData={formData} setFormData={setFormData} /> : renderAddressOCR()}
                  
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-4 bg-emerald-50/50 p-3 md:p-4 rounded-xl border border-emerald-100">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 bg-slate-50 p-3 rounded border border-slate-200">
                      {renderSelect('jarak', 'Jarak Rumah', jarakOptions)}
-                     {renderSelect('transportasi', 'Fasilitas Transportasi', ['Jalan Kaki', 'Sepeda', 'Diantar Motor', 'Kendaraan Pribadi', 'Angkutan Umum', 'Lainnya'])}
+                     {renderSelect('transportasi', 'Transportasi', ['Jalan Kaki', 'Sepeda', 'Diantar Motor', 'Kendaraan Pribadi', 'Angkutan Umum', 'Lainnya'])}
                      {renderSelect('waktuTempuh', 'Waktu Tempuh', waktuTempuhOptions)}
                  </div>
              </div>
           </div>
 
           {isSantri && (
-              <div className="space-y-4 md:space-y-6">
-                  <div className="bg-blue-50/50 p-4 md:p-6 rounded-2xl border border-blue-100 shadow-sm">
-                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-5 gap-2">
-                         <h4 className="font-extrabold text-blue-800 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Data Ayah</h4>
-                         <select name="statusAyah" value={formData.statusAyah || 'Hidup'} onChange={handleChange} className="text-[10px] md:text-xs font-bold border-2 border-blue-200 rounded p-1.5 md:p-2 outline-none bg-white text-blue-800 w-full md:w-auto">
-                             <option value="Hidup">Hidup (Sesuai KK)</option><option value="Meninggal">Meninggal / Tidak Diketahui</option>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+                     <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                         <h4 className="font-bold text-slate-700 flex items-center gap-1.5"><UserCheck size={14}/> Profil Ayah</h4>
+                         <select name="statusAyah" value={formData.statusAyah || 'Hidup'} onChange={handleChange} className="text-[10px] border border-slate-300 rounded p-1 outline-none bg-white">
+                             <option value="Hidup">Ada (Sesuai KK)</option><option value="Meninggal">Almarhum / Tidak Ada</option>
                          </select>
                      </div>
                      {formData.statusAyah === 'Hidup' ? (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                            {renderInput('ayahNik', 'NIK Ayah', '16 Digit Angka', true)}
-                            {renderInput('ayahNama', 'Nama Ayah', '', true)}
-                            {renderInput('ayahTempatLahir', 'Tempat Lahir Ayah')}
-                            {renderDateInput('ayahTglLahir', 'Tanggal Lahir Ayah')}
-                            {renderInput('ayahPekerjaan', 'Pekerjaan Ayah')}
-                            {renderSelect('ayahEstimasiGaji', 'Estimasi Pendapatan', pendapatanOptions)}
+                         <div className="space-y-3">
+                            {renderInput('ayahNik', 'NIK Ayah', '16 Digit NIK', true)}
+                            {renderInput('ayahNama', 'Nama Lengkap Ayah', '', true)}
+                            {renderInput('ayahTempatLahir', 'Tempat Lahir')}
+                            {renderDateInput('ayahTglLahir', 'Tanggal Lahir')}
+                            {renderInput('ayahPekerjaan', 'Pekerjaan')}
+                            {renderSelect('ayahEstimasiGaji', 'Pendapatan', pendapatanOptions)}
                          </div>
                      ) : (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                         <div className="space-y-3">
                             {renderInput('ayahNama', 'Nama Ayah (Almarhum)')}
                          </div>
                      )}
                   </div>
 
-                  <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm">
-                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-5 gap-2">
-                         <h4 className="font-extrabold text-pink-800 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Data Ibu</h4>
-                         <select name="statusIbu" value={formData.statusIbu || 'Hidup'} onChange={handleChange} className="text-[10px] md:text-xs font-bold border-2 border-pink-200 rounded p-1.5 md:p-2 outline-none bg-white text-pink-800 w-full md:w-auto">
-                             <option value="Hidup">Hidup (Sesuai KK)</option><option value="Meninggal">Meninggal / Tidak Diketahui</option>
+                  <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+                     <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                         <h4 className="font-bold text-slate-700 flex items-center gap-1.5"><UserCheck size={14}/> Profil Ibu</h4>
+                         <select name="statusIbu" value={formData.statusIbu || 'Hidup'} onChange={handleChange} className="text-[10px] border border-slate-300 rounded p-1 outline-none bg-white">
+                             <option value="Hidup">Ada (Sesuai KK)</option><option value="Meninggal">Almarhumah / Tidak Ada</option>
                          </select>
                      </div>
                      {formData.statusIbu === 'Hidup' ? (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                            {renderInput('ibuNik', 'NIK Ibu', '16 Digit Angka', true)}
-                            {renderInput('ibuNama', 'Nama Ibu', '', true)}
-                            {renderInput('ibuTempatLahir', 'Tempat Lahir Ibu')}
-                            {renderDateInput('ibuTglLahir', 'Tanggal Lahir Ibu')}
-                            {renderInput('ibuPekerjaan', 'Pekerjaan Ibu')}
-                            {renderSelect('ibuEstimasiGaji', 'Estimasi Pendapatan', pendapatanOptions)}
+                         <div className="space-y-3">
+                            {renderInput('ibuNik', 'NIK Ibu', '16 Digit NIK', true)}
+                            {renderInput('ibuNama', 'Nama Lengkap Ibu', '', true)}
+                            {renderInput('ibuTempatLahir', 'Tempat Lahir')}
+                            {renderDateInput('ibuTglLahir', 'Tanggal Lahir')}
+                            {renderInput('ibuPekerjaan', 'Pekerjaan')}
+                            {renderSelect('ibuEstimasiGaji', 'Pendapatan', pendapatanOptions)}
                          </div>
                      ) : (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                         <div className="space-y-3">
                             {renderInput('ibuNama', 'Nama Ibu (Almarhumah)')}
                          </div>
                      )}
                   </div>
 
                   {formData.statusAyah === 'Meninggal' && formData.statusIbu === 'Meninggal' && (
-                      <div className="bg-amber-50 p-4 md:p-6 rounded-2xl border border-amber-200 shadow-sm">
-                         <h4 className="font-extrabold text-amber-900 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Data Wali (Jika Orang Tua Tidak Ada)</h4>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                      <div className="bg-white p-4 rounded border border-slate-200 shadow-sm md:col-span-2">
+                         <h4 className="font-bold text-slate-700 mb-3 pb-2 border-b border-slate-100 flex items-center gap-1.5"><UserCheck size={14}/> Data Wali Santri</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {renderInput('waliNama', 'Nama Wali')}
-                            {renderInput('waliHubungan', 'Hubungan dengan Santri', 'Contoh: Kakek, Paman')}
+                            {renderInput('waliHubungan', 'Hubungan', 'Contoh: Kakek, Paman')}
                          </div>
                       </div>
                   )}
@@ -646,38 +637,32 @@
 
           {!isSantri && (
               <React.Fragment>
-                  <div className="bg-amber-50/50 p-4 md:p-6 rounded-2xl border border-amber-100 shadow-sm">
-                     <h4 className="font-extrabold text-amber-800 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><Users size={16}/> Status Perkawinan & Keluarga</h4>
-                     <div className="mb-4">
+                  <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+                     <h4 className="font-bold text-slate-700 mb-3 pb-2 border-b border-slate-100 flex items-center gap-1.5"><Users size={14}/> Status Perkawinan & KK</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {renderSelect('statusPerkawinan', 'Status Perkawinan', ['Belum Kawin', 'Kawin', 'Janda/Duda'], true)}
+                        {renderInput('noKk', 'Nomor Kartu Keluarga (KK)', '16 Digit KK', true)}
                      </div>
                      
-                     {formData.statusPerkawinan === 'Belum Kawin' && (
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 border-t border-amber-200/50 pt-4">
-                            {renderInput('noKk', 'Nomor Kartu Keluarga (KK)', '16 Digit Angka', true)}
-                         </div>
-                     )}
-                     
                      {(formData.statusPerkawinan === 'Kawin' || formData.statusPerkawinan === 'Janda/Duda') && (
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 border-t border-amber-200/50 pt-4">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
                             {renderInput('namaPasangan', 'Nama Suami/Istri', '', formData.statusPerkawinan === 'Kawin')}
-                            {renderInput('jumlahAnak', 'Jumlah Anak', 'Contoh: 2')}
-                            {renderInput('noKk', 'Nomor Kartu Keluarga (KK)', '16 Digit Angka', true)}
+                            {renderInput('jumlahAnak', 'Jumlah Anak', 'Jumlah Tanggungan Anak')}
                          </div>
                      )}
                   </div>
 
-                  <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm mt-4 md:mt-6">
-                     <h4 className="font-extrabold text-pink-800 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Informasi Ibu Kandung</h4>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  <div className="bg-white p-4 rounded border border-slate-200 shadow-sm">
+                     <h4 className="font-bold text-slate-700 mb-3 pb-2 border-b border-slate-100 flex items-center gap-1.5"><UserCheck size={14}/> Ibu Kandung Ustadz</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {renderInput('ibuNama', 'Nama Ibu Kandung')}
                      </div>
                   </div>
               </React.Fragment>
           )}
           
-          <button type="submit" disabled={isProcessing} className="w-full bg-emerald-700 text-white py-3 md:py-4 rounded-xl font-bold mt-6 md:mt-8 shadow-lg shadow-emerald-700/30 hover:bg-emerald-800 hover:-translate-y-1 transition-all disabled:opacity-70 flex justify-center items-center gap-2 text-sm md:text-base">
-            {isProcessing ? <RefreshCw className="animate-spin" size={18}/> : <CheckCircle size={18} />} Selesaikan Sesi & Simpan Metrik
+          <button type="submit" disabled={isProcessing} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 rounded font-bold shadow-sm transition disabled:opacity-50 flex justify-center items-center gap-2 text-sm mt-4">
+            {isProcessing ? <RefreshCw className="animate-spin" size={14}/> : <CheckCircle size={14} />} Simpan Form & Catat Log Sesi
           </button>
         </form>
       );
@@ -686,7 +671,6 @@
     function ExperimentEntryView({ targetType, targetData, setTargetData, researchLogs, setResearchLogs, testerInfo, showToast }) {
       const isSantri = targetType === 'santri';
       const targetLabel = isSantri ? 'Santri' : 'Ustadz';
-      
       const initialStep = isSantri ? 'INPUT_NIK' : 'UPLOAD_KTP';
 
       const [entryMethod, setEntryMethod] = useState('ocr');
@@ -777,10 +761,10 @@
                       const base64Str = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
                       resolve({ mimeType: 'image/jpeg', data: base64Str });
                   };
-                  img.onerror = () => reject(new Error("Gagal memuat gambar"));
+                  img.onerror = () => reject(new Error("Gagal memuat berkas gambar"));
                   img.src = e.target.result;
               };
-              reader.onerror = () => reject(new Error("Gagal membaca file"));
+              reader.onerror = () => reject(new Error("Gagal membaca file berkas"));
               reader.readAsDataURL(file);
           });
       };
@@ -822,15 +806,15 @@
             if (jsonText) {
                 const cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
                 const data = JSON.parse(cleanJson);
-                setFormData(prev => ({ ...prev, ...data, statusValidasi: 'Ekstraksi KK Selesai. Silakan lengkapi form.' }));
+                setFormData(prev => ({ ...prev, ...data, statusValidasi: 'Ekstraksi KK Berhasil. Harap periksa kembali sebelum menyimpan.' }));
                 setOcrStep('FORM');
-                showToast("Berhasil mengekstrak data dari KK.", "success");
+                showToast("Data Kartu Keluarga berhasil ditarik.", "success");
             } else {
                 throw new Error("Respon AI kosong");
             }
         } catch (error) {
             console.error("OCR Error:", error);
-            showToast(`Gagal: ${error.message}`, "error"); 
+            showToast(`Gagal memproses: ${error.message}`, "error"); 
         } finally {
             setIsExtracting(false); setRawFile(null); setFilePreview(null);
         }
@@ -857,13 +841,13 @@
                 const data = JSON.parse(cleanJson);
                 setFormData(prev => ({ ...prev, ...data }));
                 setOcrStep('UPLOAD_KK_USTADZ');
-                showToast("KTP terbaca. Silakan lanjut upload KK.", "info");
+                showToast("KTP terbaca. Silakan lanjutkan ke pemindaian KK.", "info");
             } else { 
                 throw new Error("Respon AI kosong"); 
             }
         } catch (error) { 
             console.error("OCR Error:", error);
-            showToast(`Gagal: ${error.message}`, "error"); 
+            showToast(`Gagal memproses: ${error.message}`, "error"); 
         } finally { 
             setIsExtracting(false); setRawFile(null); setFilePreview(null); 
         }
@@ -888,15 +872,15 @@
               if (jsonText) {
                   const cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
                   const data = JSON.parse(cleanJson);
-                  setFormData(prev => ({ ...prev, ...data, statusValidasi: 'Ekstraksi KTP & KK Selesai. Silakan lengkapi form.' }));
+                  setFormData(prev => ({ ...prev, ...data, statusValidasi: 'Ekstraksi Dokumen Selesai. Silakan lengkapi formulir.' }));
                   setOcrStep('FORM');
-                  showToast("Berhasil mengekstrak data Ibu dari KK.", "success");
+                  showToast("Data Ibu dari KK berhasil ditarik.", "success");
               } else { 
                   throw new Error("Respon AI kosong"); 
               }
           } catch (error) { 
               console.error("OCR Error:", error);
-              showToast(`Gagal: ${error.message}`, "error"); 
+              showToast(`Gagal memproses: ${error.message}`, "error"); 
           } finally { 
               setIsExtracting(false); setRawFile(null); setFilePreview(null); 
           }
@@ -906,26 +890,22 @@
         e.preventDefault();
         
         if(!formData.nik || !formData.nama || !formData.tempatLahir || !formData.tglLahir || !formData.jenisKelamin || !formData.provinsi || !formData.agama || !formData.alamatLengkap) {
-            return showToast("Gagal Disimpan! Pastikan data berlabel tanda bintang merah (*) sudah terisi.", "error");
+            return showToast("Pastikan kolom berbintang merah (*) sudah terisi.", "error");
         }
         
         if (isSantri) {
             if (formData.statusAyah === 'Hidup' && (!formData.ayahNik || !formData.ayahNama)) {
-                return showToast("Gagal Disimpan! NIK dan Nama Ayah wajib diisi jika statusnya Hidup.", "error");
+                return showToast("Gagal menyimpan! NIK & Nama Ayah wajib jika berstatus ada.", "error");
             }
             if (formData.statusIbu === 'Hidup' && (!formData.ibuNik || !formData.ibuNama)) {
-                return showToast("Gagal Disimpan! NIK dan Nama Ibu wajib diisi jika statusnya Hidup.", "error");
+                return showToast("Gagal menyimpan! NIK & Nama Ibu wajib jika berstatus ada.", "error");
             }
         } else {
-            if (!formData.statusPerkawinan) return showToast("Gagal Disimpan! Status Perkawinan wajib dipilih.", "error");
-            if (!formData.noKk) return showToast("Gagal Disimpan! Nomor KK wajib diisi.", "error");
-            if ((formData.statusPerkawinan === 'Kawin' || formData.statusPerkawinan === 'Janda/Duda') && !formData.namaPasangan) {
-                 // return showToast("Gagal Disimpan! Nama Suami/Istri wajib diisi.", "error"); // Toleransi jika Janda/Duda
-            }
+            if (!formData.statusPerkawinan) return showToast("Status perkawinan wajib diisi.", "error");
+            if (!formData.noKk) return showToast("Nomor KK wajib diisi.", "error");
         }
         
         setIsTimerRunning(false); setIsProcessingGas(true);
-
         const methodUsed = entryMethod === 'ocr' ? 'OCR Gemini AI' : 'Manual';
         
         const payloadData = { 
@@ -944,7 +924,7 @@
              body: JSON.stringify(payloadData) 
           });
         } catch(e) {
-          console.error("Gagal mengirim ke GAS via Proxy", e);
+          console.error("Gagal mengirim data logs ke spreadsheet", e);
         }
 
         const newLog = { id: `LOG-${Date.now().toString().slice(-4)}`, tester: testerInfo.nama, target: targetLabel, method: methodUsed, duration: timeElapsed, timestamp: new Date().toLocaleTimeString('id-ID') };
@@ -960,185 +940,174 @@
         setTargetData([...targetData, { id: `${newIdPrefix}-${Date.now().toString().slice(-4)}`, ...formData, nama: namaLengkap, alamat: gabunganAlamat, status: 'Aktif' }]);
         
         setFormData(emptyForm); setOcrStep(initialStep); setIsProcessingGas(false); setTempNik('');
-        showToast(`Berhasil! Waktu entri tercatat: ${timeElapsed} detik.`, "success");
+        showToast(`Data tersimpan! Waktu: ${timeElapsed} detik.`, "success");
       };
 
       return (
-        <div className="space-y-4 md:space-y-6 animate-fade-in max-w-5xl mx-auto w-full">
-          <header className="mb-4 md:mb-6">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 flex items-center gap-2 md:gap-3">
-              <div className="bg-blue-100 p-1.5 md:p-2 rounded-xl text-blue-600">{isSantri ? <Users size={24} /> : <UserCheck size={24} />}</div>
-              Entri {targetLabel}
-            </h2>
-            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Bandingkan kecepatan sistem otomatis AI vs konvensional.</p>
+        <div className="space-y-5 fade-in max-w-5xl mx-auto w-full">
+          <header className="border-b border-slate-200 pb-3">
+            <h2 className="text-xl font-bold text-slate-800">Metode Pengujian ({targetLabel})</h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Simulasikan pengisian dokumen untuk mengukur efisiensi sistem.</p>
           </header>
 
-          <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 relative overflow-hidden">
-            <div className="relative z-10 w-full md:w-auto">
-              <h3 className="font-bold text-slate-700 mb-2 md:mb-3 text-[10px] md:text-xs uppercase tracking-widest text-center md:text-left">Pilih Instrumen</h3>
-              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/60 shadow-inner w-full md:w-auto">
-                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('ocr'); setOcrStep(initialStep); } }} disabled={isTimerRunning} className={`flex-1 md:flex-none px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-extrabold rounded-lg transition-all ${entryMethod === 'ocr' ? 'bg-white shadow-sm text-emerald-600 border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>OCR Gemini AI</button>
-                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('manual'); setOcrStep('FORM'); } }} disabled={isTimerRunning} className={`flex-1 md:flex-none px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-extrabold rounded-lg transition-all ${entryMethod === 'manual' ? 'bg-white shadow-sm text-blue-600 border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Ketik Manual</button>
+          <div className="bg-white p-4 rounded border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="w-full md:w-auto">
+              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Pilih Instrumen</span>
+              <div className="flex bg-slate-100 p-0.5 rounded border border-slate-200 w-full md:w-auto">
+                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('ocr'); setOcrStep(initialStep); } }} disabled={isTimerRunning} className={`px-4 py-1.5 text-xs font-semibold rounded transition ${entryMethod === 'ocr' ? 'bg-white shadow-sm text-emerald-800 border border-slate-200/50' : 'text-slate-500 hover:text-slate-800'}`}>OCR Gemini AI</button>
+                <button onClick={() => { if(!isTimerRunning){ setEntryMethod('manual'); setOcrStep('FORM'); } }} disabled={isTimerRunning} className={`px-4 py-1.5 text-xs font-semibold rounded transition ${entryMethod === 'manual' ? 'bg-white shadow-sm text-blue-800 border border-slate-200/50' : 'text-slate-500 hover:text-slate-800'}`}>Ketik Manual</button>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 w-full md:w-auto relative z-10">
-              <div className={`w-full md:w-auto flex items-center justify-center gap-2 md:gap-3 px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl font-mono text-2xl md:text-3xl font-black border-2 transition-colors ${isTimerRunning && !isProcessingGas ? 'bg-red-50 text-red-600 border-red-200 animate-pulse shadow-inner' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
-                <Timer size={24} className={isTimerRunning && !isProcessingGas ? 'text-red-500' : 'text-slate-400'} /> {formatTime(timeElapsed)}
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className={`px-4 py-2 rounded border font-mono text-xl font-bold ${isTimerRunning && !isProcessingGas ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                {formatTime(timeElapsed)}
               </div>
               {!isTimerRunning ? (
-                <button onClick={handleStartExperiment} className="w-full md:w-auto bg-emerald-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 hover:-translate-y-1 transition-all text-sm md:text-base">Mulai</button>
+                <button onClick={handleStartExperiment} className="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2 rounded text-xs font-semibold shadow-sm transition">Mulai Tes</button>
               ) : (
-                <button onClick={cancelExperiment} className="w-full md:w-auto bg-slate-200 text-slate-700 px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold hover:bg-slate-300 transition-all border border-slate-300 text-sm md:text-base">Batal</button>
+                <button onClick={cancelExperiment} className="bg-slate-150 text-slate-700 hover:bg-slate-200 px-6 py-2 rounded text-xs font-semibold border border-slate-300 transition">Batal</button>
               )}
             </div>
           </div>
 
           {isTimerRunning && entryMethod === 'ocr' && isSantri && (
-            <div className="bg-white p-2 rounded-2xl md:rounded-3xl shadow-sm border border-emerald-100 animate-fade-in w-full overflow-hidden">
-              <div className="flex items-center justify-between m-2 md:m-4 bg-emerald-50/50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-emerald-100 shadow-inner text-[10px] md:text-xs">
-                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'INPUT_NIK' || ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'INPUT_NIK' || ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>1</div><span className="hidden md:inline">Input NIK</span></div>
-                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>2</div><span className="hidden md:inline">Upload KK</span></div>
-                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>3</div><span className="hidden md:inline">Verifikasi</span></div>
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden fade-in p-4">
+              <div className="flex items-center text-[10px] font-bold uppercase tracking-wider mb-4 bg-slate-50 p-2 rounded border border-slate-200">
+                  <div className={`flex items-center gap-1.5 ${ocrStep === 'INPUT_NIK' || ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><span>1. Input NIK</span></div>
+                  <div className="mx-2 text-slate-300">/</div>
+                  <div className={`flex items-center gap-1.5 ${ocrStep === 'UPLOAD_KK' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><span>2. Upload KK</span></div>
+                  <div className="mx-2 text-slate-300">/</div>
+                  <div className={`flex items-center gap-1.5 ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><span>3. Verifikasi Data</span></div>
               </div>
 
               {ocrStep === 'INPUT_NIK' && (
-                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-xl md:rounded-3xl relative transition-all">
-                  <h4 className="font-extrabold text-slate-800 text-lg md:text-xl mb-3 md:mb-4">Masukkan NIK Santri</h4>
-                  <form onSubmit={handleNikSubmit} className="w-full max-w-xs mx-auto">
-                     <input type="number" placeholder="16 Digit NIK" required className="w-full bg-white border-2 border-emerald-200 p-3 md:p-4 rounded-xl text-center font-mono font-bold focus:border-emerald-500 outline-none mb-3 md:mb-4 text-sm md:text-base" value={tempNik} onChange={e => setTempNik(e.target.value)} />
-                     <button type="submit" className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 text-sm md:text-base">Lanjut ke Upload KK</button>
+                <div className="text-center p-6 border border-slate-200 bg-slate-50/50 rounded max-w-sm mx-auto">
+                  <h4 className="font-bold text-slate-800 text-sm mb-3">Masukkan NIK Santri</h4>
+                  <form onSubmit={handleNikSubmit} className="space-y-3">
+                     <input type="number" placeholder="16 Digit NIK" required className="w-full bg-white border border-slate-300 p-2 rounded text-center font-mono font-bold focus:border-emerald-600 outline-none text-sm transition" value={tempNik} onChange={e => setTempNik(e.target.value)} />
+                     <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded text-xs font-semibold transition">Lanjutkan ke Upload KK</button>
                   </form>
                 </div>
               )}
 
               {ocrStep === 'UPLOAD_KK' && (
-                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-xl md:rounded-3xl relative transition-all hover:bg-emerald-50 group">
+                <div className="text-center p-6 border-2 border-dashed border-slate-300 bg-slate-50/50 rounded max-w-sm mx-auto relative hover:bg-slate-50 transition group">
                   {!filePreview ? (
                     <React.Fragment>
-                      <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm"><Upload size={28} className="text-emerald-600" /></div>
-                      <p className="font-extrabold text-slate-800 text-base md:text-lg mb-1 md:mb-2 px-2">Upload Dokumen (KK)</p>
-                      <p className="text-xs md:text-sm text-slate-500 font-medium max-w-sm mx-auto px-4">AI akan mengekstrak data santri beserta data orang tuanya.</p>
+                      <Upload size={24} className="text-slate-400 mx-auto mb-2" />
+                      <p className="font-semibold text-slate-800 text-xs">Pilih Berkas Gambar KK</p>
+                      <p className="text-[10px] text-slate-500 mt-1 max-w-xs mx-auto">Sistem AI akan otomatis membaca data anggota KK sesuai NIK target.</p>
                     </React.Fragment>
                   ) : (
-                     <div className="mb-4 md:mb-6">
-                        <img src={filePreview} className="h-32 md:h-48 mx-auto rounded-xl md:rounded-2xl border-4 border-white shadow-xl transition-transform" />
-                        <p className="text-xs md:text-sm font-bold text-emerald-600 mt-3 md:mt-4 bg-emerald-100 w-max mx-auto px-3 py-1.5 rounded-full">✓ Gambar KK Siap Diproses</p>
+                     <div className="mb-2">
+                        <img src={filePreview} className="max-h-36 mx-auto rounded border border-slate-200 shadow-sm" />
+                        <p className="text-[10px] font-bold text-emerald-700 mt-2 bg-emerald-100/50 w-max mx-auto px-2 py-0.5 rounded">✓ Gambar KK Siap Dipindai</p>
                      </div>
                   )}
-                  <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <button onClick={runGeminiOCRSantriKK} disabled={isExtracting || !rawFile} className="mt-4 md:mt-6 w-full max-w-xs mx-auto bg-emerald-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-emerald-600/30 relative z-20 hover:bg-emerald-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base">
-                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak Data KK AI"}
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  <button onClick={runGeminiOCRSantriKK} disabled={isExtracting || !rawFile} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded text-xs font-semibold transition relative z-10 disabled:opacity-50">
+                    {isExtracting ? 'Mengekstrak Data...' : 'Mulai Pindai AI'}
                   </button>
                 </div>
               )}
               
               {ocrStep === 'FORM' && (
-                  <div className="p-3 md:p-6 pt-0 md:pt-2">
-                     <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
-                  </div>
+                 <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
               )}
             </div>
           )}
 
           {isTimerRunning && entryMethod === 'ocr' && !isSantri && (
-            <div className="bg-white p-2 rounded-2xl md:rounded-3xl shadow-sm border border-emerald-100 animate-fade-in w-full overflow-hidden">
-              <div className="flex items-center justify-between m-2 md:m-4 bg-emerald-50/50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-emerald-100 shadow-inner text-[10px] md:text-xs">
-                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'UPLOAD_KTP' || ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KTP' || ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>1</div><span className="hidden md:inline">Upload KTP</span></div>
-                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>2</div><span className="hidden md:inline">Upload KK</span></div>
-                  <div className={`h-1 flex-1 mx-1 md:mx-3 rounded-full ${ocrStep === 'FORM' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                  <div className={`font-bold flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex justify-center items-center ${ocrStep === 'FORM' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200'}`}>3</div><span className="hidden md:inline">Verifikasi</span></div>
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden fade-in p-4">
+              <div className="flex items-center text-[10px] font-bold uppercase tracking-wider mb-4 bg-slate-50 p-2 rounded border border-slate-200">
+                  <div className={`flex items-center gap-1.5 ${ocrStep === 'UPLOAD_KTP' || ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><span>1. Upload KTP</span></div>
+                  <div className="mx-2 text-slate-300">/</div>
+                  <div className={`flex items-center gap-1.5 ${ocrStep === 'UPLOAD_KK_USTADZ' || ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><span>2. Upload KK</span></div>
+                  <div className="mx-2 text-slate-300">/</div>
+                  <div className={`flex items-center gap-1.5 ${ocrStep === 'FORM' ? 'text-emerald-700' : 'text-slate-400'}`}><span>3. Verifikasi Data</span></div>
               </div>
 
               {ocrStep === 'UPLOAD_KTP' && (
-                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-xl md:rounded-3xl relative transition-all hover:bg-emerald-50 group">
+                <div className="text-center p-6 border-2 border-dashed border-slate-300 bg-slate-50/50 rounded max-w-sm mx-auto relative hover:bg-slate-50 transition group">
                   {!filePreview ? (
                     <React.Fragment>
-                      <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm"><Upload size={28} className="text-emerald-600" /></div>
-                      <p className="font-extrabold text-slate-800 text-base md:text-lg mb-1 md:mb-2">Upload Dokumen KTP</p>
+                      <Upload size={24} className="text-slate-400 mx-auto mb-2" />
+                      <p className="font-semibold text-slate-800 text-xs">Pilih Berkas Gambar KTP</p>
                     </React.Fragment>
                   ) : (
-                     <div className="mb-4 md:mb-6">
-                        <img src={filePreview} className="h-32 md:h-48 mx-auto rounded-xl md:rounded-2xl border-4 border-white shadow-xl" />
-                        <p className="text-xs md:text-sm font-bold text-emerald-600 mt-3 md:mt-4 bg-emerald-100 w-max mx-auto px-3 py-1.5 rounded-full">✓ Gambar KTP Siap Diproses</p>
+                     <div className="mb-2">
+                        <img src={filePreview} className="max-h-36 mx-auto rounded border border-slate-200 shadow-sm" />
+                        <p className="text-[10px] font-bold text-emerald-700 mt-2 bg-emerald-100/50 w-max mx-auto px-2 py-0.5 rounded">✓ Gambar KTP Siap</p>
                      </div>
                   )}
-                  <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <button onClick={runGeminiOCRUstadzKTP} disabled={isExtracting || !rawFile} className="mt-4 md:mt-6 w-full max-w-xs mx-auto bg-emerald-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-emerald-600/30 relative z-20 hover:bg-emerald-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base">
-                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak KTP AI"}
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  <button onClick={runGeminiOCRUstadzKTP} disabled={isExtracting || !rawFile} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded text-xs font-semibold transition relative z-10 disabled:opacity-50">
+                    {isExtracting ? 'Mengekstrak KTP...' : 'Pindai KTP dengan AI'}
                   </button>
                 </div>
               )}
 
               {ocrStep === 'UPLOAD_KK_USTADZ' && (
-                <div className="text-center p-6 md:p-12 m-2 md:m-4 border-2 border-dashed border-purple-300 bg-purple-50/30 rounded-xl md:rounded-3xl relative transition-all hover:bg-purple-50 group">
+                <div className="text-center p-6 border-2 border-dashed border-slate-300 bg-slate-50/50 rounded max-w-sm mx-auto relative hover:bg-slate-50 transition group">
                   {!filePreview ? (
                     <React.Fragment>
-                      <div className="w-16 h-16 md:w-20 md:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm"><Upload size={28} className="text-purple-600" /></div>
-                      <p className="font-extrabold text-slate-800 text-base md:text-lg mb-1 md:mb-2 px-2">Upload Dokumen (KK)</p>
-                      <p className="text-xs md:text-sm text-slate-500 font-medium max-w-sm mx-auto px-4">Untuk melengkapi data Ibu Kandung dari Ustadz.</p>
+                      <Upload size={24} className="text-slate-400 mx-auto mb-2" />
+                      <p className="font-semibold text-slate-800 text-xs">Pilih Berkas Gambar KK</p>
+                      <p className="text-[10px] text-slate-500 mt-1 max-w-xs mx-auto">Untuk melengkapi profil data ibu kandung ustadz.</p>
                     </React.Fragment>
                   ) : (
-                     <div className="mb-4 md:mb-6">
-                        <img src={filePreview} className="h-32 md:h-48 mx-auto rounded-xl md:rounded-2xl border-4 border-white shadow-xl" />
-                        <p className="text-xs md:text-sm font-bold text-purple-600 mt-3 md:mt-4 bg-purple-100 w-max mx-auto px-3 py-1.5 rounded-full">✓ Gambar KK Siap Diproses</p>
+                     <div className="mb-2">
+                        <img src={filePreview} className="max-h-36 mx-auto rounded border border-slate-200 shadow-sm" />
+                        <p className="text-[10px] font-bold text-emerald-700 mt-2 bg-emerald-100/50 w-max mx-auto px-2 py-0.5 rounded">✓ Gambar KK Siap</p>
                      </div>
                   )}
-                  <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <button onClick={runGeminiOCRUstadzKK} disabled={isExtracting || !rawFile} className="mt-4 md:mt-6 w-full max-w-xs mx-auto bg-purple-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-bold shadow-lg shadow-purple-600/30 relative z-20 hover:bg-purple-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base">
-                    {isExtracting ? <React.Fragment><RefreshCw className="animate-spin" size={16}/> Memproses...</React.Fragment> : "Ekstrak Data Ibu via KK"}
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  <button onClick={runGeminiOCRUstadzKK} disabled={isExtracting || !rawFile} className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded text-xs font-semibold transition relative z-10 disabled:opacity-50">
+                    {isExtracting ? 'Mengekstrak Ibu...' : 'Mulai Tarik Data KK'}
                   </button>
                 </div>
               )}
 
               {ocrStep === 'FORM' && (
-                  <div className="p-3 md:p-6 pt-0 md:pt-2">
-                     <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
-                  </div>
+                 <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
               )}
             </div>
           )}
 
           {isTimerRunning && entryMethod === 'manual' && (
-            <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 animate-fade-in relative overflow-hidden w-full">
-              <h3 className="font-extrabold text-lg md:text-2xl mb-4 md:mb-6 text-slate-800 flex items-center gap-2 md:gap-3 relative z-10"><div className="bg-slate-200 p-1.5 md:p-2 rounded-xl text-slate-700"><User size={20}/></div> Formulir Konvensional</h3>
-              <div className="relative z-10">
-                 <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
-              </div>
+            <div className="bg-white p-4 rounded border border-slate-200 shadow-sm fade-in">
+               <FormVerifikasi entryMethod={entryMethod} isSantri={isSantri} formData={formData} setFormData={setFormData} handleSave={handleSaveAndStop} isProcessing={isProcessingGas} />
             </div>
           )}
 
           {targetData.length > 0 && (
-            <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 mt-6 md:mt-8 overflow-hidden animate-fade-in w-full">
-              <div className="p-4 md:p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="font-extrabold text-slate-800 text-sm md:text-base flex items-center gap-2">
-                      <Database size={18} className="text-slate-500" />
-                      Data {targetLabel} Tersimpan Sesi Ini
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden mt-6">
+              <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <h3 className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                      <Database size={14} className="text-slate-500" /> Hasil Rekaman Data Sesi Ini
                   </h3>
-                  <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">
-                      {targetData.length} Entri
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[10px] font-bold">
+                      {targetData.length} Data
                   </span>
               </div>
               <div className="overflow-x-auto w-full">
-                  <table className="w-full text-left text-xs md:text-sm text-slate-600 whitespace-nowrap md:whitespace-normal">
-                      <thead className="bg-white border-b border-slate-100 uppercase text-[9px] md:text-[10px] font-extrabold tracking-widest text-slate-400">
+                  <table className="w-full text-left text-xs text-slate-600">
+                      <thead className="bg-slate-50/50 border-b border-slate-200 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                           <tr>
-                              <th className="p-3 md:p-4">ID Sistem</th>
-                              <th className="p-3 md:p-4">Nama Lengkap</th>
-                              <th className="p-3 md:p-4">NIK</th>
-                              <th className="p-3 md:p-4">Alamat Utama</th>
+                              <th className="p-3">ID</th>
+                              <th className="p-3">Nama Lengkap</th>
+                              <th className="p-3">NIK</th>
+                              <th className="p-3">Alamat</th>
                           </tr>
                       </thead>
                       <tbody>
                           {targetData.map(item => (
-                              <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
-                                  <td className="p-3 md:p-4 font-mono font-bold text-slate-500">{item.id}</td>
-                                  <td className="p-3 md:p-4 font-bold text-slate-800">{item.nama}</td>
-                                  <td className="p-3 md:p-4 font-mono">{item.nik}</td>
-                                  <td className="p-3 md:p-4 truncate max-w-[200px]">{item.alamat}</td>
+                              <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                                  <td className="p-3 font-mono text-slate-500">{item.id}</td>
+                                  <td className="p-3 font-semibold text-slate-800">{item.nama}</td>
+                                  <td className="p-3 font-mono">{item.nik}</td>
+                                  <td className="p-3 truncate max-w-[200px]">{item.alamat}</td>
                               </tr>
                           ))}
                       </tbody>
@@ -1146,7 +1115,6 @@
               </div>
             </div>
           )}
-
         </div>
       );
     }
@@ -1166,51 +1134,48 @@
       };
 
       return (
-        <div className="animate-fade-in max-w-5xl mx-auto space-y-4 md:space-y-6">
-          <header className="mb-4 md:mb-6 border-b border-slate-200 pb-3 md:pb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-4">
+        <div className="fade-in max-w-5xl mx-auto space-y-5">
+          <header className="border-b border-slate-200 pb-3 flex flex-col md:flex-row md:justify-between md:items-end gap-3">
             <div>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 flex items-center gap-2 md:gap-3">
-                <div className="bg-blue-100 p-1.5 md:p-2 rounded-xl text-blue-600"><BarChart size={24}/></div>
-                Laporan Metrik Sesi
-              </h2>
-              <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 md:mt-2">Riwayat waktu entri data yang telah dilakukan.</p>
+              <h2 className="text-xl font-bold text-slate-800">Laporan Metrik Riset</h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Seluruh jejak waktu entri data yang tersimpan selama simulasi.</p>
             </div>
-            <button onClick={handleDownload} disabled={researchLogs.length === 0} className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition disabled:opacity-50">
-              <Download size={16}/> Unduh Excel
+            <button onClick={handleDownload} disabled={researchLogs.length === 0} className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5 transition disabled:opacity-50">
+              <Download size={14}/> Ekspor format Excel
             </button>
           </header>
 
-          <div className="bg-white rounded-xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden w-full">
+          <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden w-full">
             <div className="overflow-x-auto w-full">
-              <table className="w-full text-left text-xs md:text-sm text-slate-600 whitespace-nowrap md:whitespace-normal">
-                <thead className="bg-slate-50 border-b border-slate-100 uppercase text-[9px] md:text-[10px] font-extrabold tracking-widest text-slate-400">
+              <table className="w-full text-left text-xs text-slate-600">
+                <thead className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                   <tr>
-                    <th className="p-3 md:p-5">ID Log</th>
-                    <th className="p-3 md:p-5">Target Data</th>
-                    <th className="p-3 md:p-5">Metode Entri</th>
-                    <th className="p-3 md:p-5">Waktu Tempuh</th>
-                    <th className="p-3 md:p-5">Timestamp</th>
+                    <th className="p-3">ID Log</th>
+                    <th className="p-3">Kategori</th>
+                    <th className="p-3">Metode Pengujian</th>
+                    <th className="p-3">Durasi</th>
+                    <th className="p-3">Waktu Input</th>
                   </tr>
                 </thead>
                 <tbody>
                   {researchLogs.map(log => (
-                    <tr key={log.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
-                      <td className="p-3 md:p-5 font-mono font-bold text-slate-700">{log.id}</td>
-                      <td className="p-3 md:p-5 font-bold text-slate-800">{log.target}</td>
-                      <td className="p-3 md:p-5">
-                        <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold border ${log.method.includes('OCR') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
+                    <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                      <td className="p-3 font-mono font-semibold text-slate-500">{log.id}</td>
+                      <td className="p-3 font-semibold text-slate-800">{log.target}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${log.method.includes('OCR') ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
                           {log.method}
                         </span>
                       </td>
-                      <td className="p-3 md:p-5 font-black text-slate-800 text-sm md:text-lg">{log.duration} <span className="text-[10px] md:text-xs text-slate-400 font-medium">detik</span></td>
-                      <td className="p-3 md:p-5 text-slate-500 font-medium text-[10px] md:text-sm">{log.timestamp}</td>
+                      <td className="p-3 font-bold text-slate-800 text-sm">{log.duration} <span className="text-[10px] text-slate-400 font-normal">detik</span></td>
+                      <td className="p-3 text-slate-400 font-medium">{log.timestamp}</td>
                     </tr>
                   ))}
                   {researchLogs.length === 0 && (
                     <tr>
-                      <td colSpan="5" className="text-center p-10 md:p-16">
-                        <Timer size={36} className="mx-auto text-slate-300 mb-3"/>
-                        <p className="text-slate-400 font-medium text-sm md:text-lg">Belum ada eksperimen.</p>
+                      <td colSpan="5" className="text-center p-12 text-slate-400">
+                        <Timer size={24} className="mx-auto text-slate-300 mb-2"/>
+                        <p className="text-xs">Sesi eksperimen belum direkam.</p>
                       </td>
                     </tr>
                   )}
@@ -1223,21 +1188,21 @@
     }
 
     const LikertQuestion = ({ number, title, statement, name, value, onChange }) => (
-        <div className="space-y-3 bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-100 hover:border-emerald-200 transition-colors">
-            <div className="flex items-start gap-3">
-                <div className="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-lg flex items-center justify-center font-black flex-shrink-0 text-sm">{number}</div>
+        <div className="space-y-3 bg-white p-4 rounded border border-slate-200 hover:border-slate-300 transition">
+            <div className="flex items-start gap-2.5">
+                <div className="bg-slate-100 text-slate-700 w-6 h-6 rounded flex items-center justify-center font-bold shrink-0 text-xs">{number}</div>
                 <div>
-                    <h4 className="font-extrabold text-sm md:text-base text-slate-800">{title}</h4>
-                    <p className="text-xs md:text-sm text-slate-500 mt-1 font-medium">{statement}</p>
+                    <h4 className="font-bold text-xs md:text-sm text-slate-800">{title}</h4>
+                    <p className="text-xs text-slate-500 mt-0.5 font-medium leading-relaxed">{statement}</p>
                 </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-3">
                 {['Sangat Tidak Setuju', 'Tidak Setuju', 'Netral', 'Setuju', 'Sangat Setuju'].map((opt, idx) => {
                     const score = String(idx + 1);
                     return (
-                        <label key={score} className={`flex md:flex-col items-center justify-start md:justify-center gap-2 md:gap-1.5 p-2.5 md:p-3 border-2 rounded-xl cursor-pointer transition-all ${value === score ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-200 hover:border-emerald-300 bg-white text-slate-600'}`}>
-                            <input type="radio" name={name} required className="w-4 h-4 accent-emerald-600 flex-shrink-0" value={score} checked={value === score} onChange={(e) => onChange(e.target.value)} />
-                            <span className="font-bold text-[10px] md:text-xs text-center leading-tight">{opt}</span>
+                        <label key={score} className={`flex md:flex-col items-center justify-start md:justify-center gap-2 p-2 border rounded cursor-pointer transition text-[11px] ${value === score ? 'border-emerald-600 bg-emerald-50/50 text-emerald-800 font-semibold' : 'border-slate-200 hover:border-slate-300 bg-white text-slate-600'}`}>
+                            <input type="radio" name={name} required className="w-3.5 h-3.5 accent-emerald-700 shrink-0" value={score} checked={value === score} onChange={(e) => onChange(e.target.value)} />
+                            <span className="text-center leading-tight">{opt}</span>
                         </label>
                     )
                 })}
@@ -1246,9 +1211,9 @@
     );
 
     const SectionHeader = ({ title, desc }) => (
-        <div className="mb-3 mt-6 border-b border-slate-200 pb-2">
-            <h3 className="text-lg md:text-xl font-extrabold text-slate-800">{title}</h3>
-            <p className="text-xs md:text-sm text-slate-500 font-medium">{desc}</p>
+        <div className="mb-2 mt-4 border-b border-slate-200 pb-1.5">
+            <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+            <p className="text-[11px] text-slate-400 font-medium">{desc}</p>
         </div>
     );
 
@@ -1267,7 +1232,7 @@
 
       const handleSubmit = async (e) => {
           e.preventDefault();
-          if(!a1 || !a2 || !a3 || !b1 || !b2 || !b3 || !c1 || !c2 || !c3 || !d1 || !d2 || !d3 || !e1 || !e2 || !e3) return showToast("Mohon lengkapi semua 15 pertanyaan skala Likert.", "error");
+          if(!a1 || !a2 || !a3 || !b1 || !b2 || !b3 || !c1 || !c2 || !c3 || !d1 || !d2 || !d3 || !e1 || !e2 || !e3) return showToast("Mohon isi semua pertanyaan skala Likert.", "error");
           setIsSending(true);
           
           const payload = {
@@ -1288,10 +1253,10 @@
                  body: JSON.stringify(payload)
               });
               setSubmitted(true);
-              showToast("Kuisioner Skala Likert berhasil disimpan untuk analisis Bab 4!", "success");
+              showToast("Evaluasi Likert berhasil terkirim.", "success");
           } catch(err) {
               console.error("Gagal mengirim kuisioner", err);
-              showToast("Terjadi kesalahan koneksi server.", "error");
+              showToast("Koneksi gagal saat mengirim data kuisioner.", "error");
           } finally {
               setIsSending(false);
           }
@@ -1299,71 +1264,68 @@
 
       if (submitted) {
           return (
-              <div className="bg-white p-8 md:p-12 rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100 text-center animate-fade-in max-w-2xl mx-auto mt-6 md:mt-10">
-                  <div className="w-16 h-16 md:w-24 md:h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
-                      <CheckCircle size={36} />
+              <div className="bg-white p-6 md:p-10 rounded border border-slate-200 shadow-sm text-center animate-fade-in max-w-xl mx-auto mt-6">
+                  <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle size={24} />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-2 md:mb-3">Evaluasi Selesai</h2>
-                  <p className="text-sm md:text-lg text-slate-500 leading-relaxed px-2">
-                      Terima kasih atas penilaian Anda. Data kuisioner Likert ini siap digunakan sebagai basis kuantitatif pada Bab 4 penelitian.
+                  <h2 className="text-lg font-bold text-slate-800 mb-1">Terima Kasih, Pengisian Selesai</h2>
+                  <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto font-medium">
+                      Data evaluasi secara otomatis terekam dan disimpan sebagai basis analisis laporan riset Anda.
                   </p>
               </div>
           );
       }
 
       return (
-          <div className="max-w-4xl mx-auto animate-fade-in pb-10">
-              <header className="mb-6 md:mb-8 border-b border-slate-200 pb-4 md:pb-6">
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 flex items-center gap-2 md:gap-3">
-                      <div className="bg-purple-100 text-purple-600 p-1.5 md:p-2 rounded-xl"><MessageSquare size={24}/></div> 
-                      Kuisioner Evaluasi Sistem (Skala Likert)
-                  </h2>
-                  <p className="text-xs md:text-sm text-slate-500 mt-2 font-medium leading-relaxed">
-                      Kuesioner ini dirancang untuk evaluasi Bab 4. Silakan berikan penilaian objektif berdasarkan pengalaman simulasi Anda.
+          <div className="max-w-4xl mx-auto fade-in pb-10">
+              <header className="mb-4 border-b pb-3">
+                  <h2 className="text-xl font-bold text-slate-800">Kuesioner Evaluasi Sistem</h2>
+                  <p className="text-xs text-slate-500 mt-0.5 font-medium leading-relaxed">
+                      Lengkapi kuesioner skala Likert untuk pengumpulan data riset kepuasan pengguna.
                   </p>
               </header>
 
-              <form onSubmit={handleSubmit} className="bg-white p-5 md:p-8 rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-200 space-y-4 md:space-y-5">
-                  <SectionHeader title="A. Variabel Efisiensi (Waktu & Tenaga)" desc="Bertujuan mengukur dampak teknologi AI terhadap pemangkasan beban kerja." />
+              <form onSubmit={handleSubmit} className="space-y-4">
+                  <SectionHeader title="A. Variabel Efisiensi (Waktu & Tenaga)" desc="Menilai pengaruh pemrosesan AI terhadap beban operasional tata usaha." />
                   <LikertQuestion number="A1" title="Efisiensi Entri" statement="Penggunaan OCR Gemini AI mempercepat proses entri data santri dan ustadz secara signifikan dibandingkan mengetik manual." name="a1" value={a1} onChange={setA1} />
                   <LikertQuestion number="A2" title="Waktu Pemrosesan" statement="Waktu pemrosesan data (waktu tunggu) dari AI untuk mengekstrak teks dirasa sangat cepat dan tidak mengganggu alur kerja." name="a2" value={a2} onChange={setA2} />
                   <LikertQuestion number="A3" title="Beban Kerja" statement="Secara keseluruhan, sistem ini berhasil mengurangi beban kerja administratif saya sehari-hari." name="a3" value={a3} onChange={setA3} />
 
-                  <SectionHeader title="B. Variabel Akurasi (Efektivitas OCR AI)" desc="Bertujuan mengukur seberapa presisi sistem AI membaca data dari dokumen." />
+                  <SectionHeader title="B. Variabel Akurasi (Efektivitas OCR AI)" desc="Mengukur ketepatan interpretasi teks dari dokumen digital." />
                   <LikertQuestion number="B1" title="Tingkat Akurasi" statement="Tingkat akurasi ekstraksi teks dari gambar (KTP/KK) oleh sistem OCR AI sudah sangat baik dan presisi." name="b1" value={b1} onChange={setB1} />
                   <LikertQuestion number="B2" title="Minim Revisi" statement="Data yang dihasilkan oleh AI jarang memerlukan perbaikan atau revisi ketik secara manual." name="b2" value={b2} onChange={setB2} />
                   <LikertQuestion number="B3" title="Pemetaan Data" statement="Sistem mampu menempatkan data hasil ekstraksi ke dalam kolom formulir yang tepat (misal: NIK masuk ke NIK, Nama ke Nama)." name="b3" value={b3} onChange={setB3} />
 
-                  <SectionHeader title="C. Variabel Usability (Kemudahan Penggunaan)" desc="Bertujuan mengukur penerimaan dan kemudahan interaksi pengguna dengan sistem." />
+                  <SectionHeader title="C. Variabel Usability (Kemudahan Penggunaan)" desc="Menganalisis penerimaan antarmuka perangkat lunak oleh pengguna." />
                   <LikertQuestion number="C1" title="Desain Antarmuka" statement="Antarmuka (User Interface) sistem ini dirancang dengan rapi, bersih, dan memanjakan mata." name="c1" value={c1} onChange={setC1} />
                   <LikertQuestion number="C2" title="Kemudahan Fitur" statement="Fitur dan tombol pada aplikasi mudah dipahami tanpa memerlukan buku panduan atau pelatihan teknis yang rumit." name="c2" value={c2} onChange={setC2} />
                   <LikertQuestion number="C3" title="Navigasi Menu" statement="Navigasi antar menu (seperti berpindah dari entri data ke arsip dokumen) berjalan lancar dan logis." name="c3" value={c3} onChange={setC3} />
 
-                  <SectionHeader title="D. Variabel Fungsionalitas Administrasi" desc="Bertujuan mengukur keberhasilan digitalisasi birokrasi." />
+                  <SectionHeader title="D. Variabel Fungsionalitas Administrasi" desc="Menguji kesesuaian sistem dengan administrasi kelembagaan." />
                   <LikertQuestion number="D1" title="Otomatisasi Dokumen" statement="Fitur pembuatan dokumen resmi (seperti Surat Tugas) secara otomatis sangat membantu dan sesuai standar lembaga." name="d1" value={d1} onChange={setD1} />
                   <LikertQuestion number="D2" title="Arsip Digital" statement="Sistem arsip terdigitalisasi memudahkan saya dalam mencari kembali dokumen yang telah diterbitkan di masa lalu." name="d2" value={d2} onChange={setD2} />
                   <LikertQuestion number="D3" title="Format Form Geografis" statement="Pengisian form yang otomatis mendeteksi alamat (Provinsi hingga Desa) sangat membantu standarisasi format alamat." name="d3" value={d3} onChange={setD3} />
 
-                  <SectionHeader title="E. Variabel Otorisasi & TTE" desc="Bertujuan mengukur efektivitas persetujuan dokumen secara digital." />
+                  <SectionHeader title="E. Variabel Otorisasi & TTE" desc="Keamanan dan efisiensi legalisasi dokumen digital." />
                   <LikertQuestion number="E1" title="Kecepatan Otorisasi" statement="Penggunaan QR Code sebagai Tanda Tangan Elektronik (TTE) sangat mempercepat proses otorisasi dokumen oleh pimpinan." name="e1" value={e1} onChange={setE1} />
                   <LikertQuestion number="E2" title="Kepercayaan Sistem" statement="Saya merasa yakin bahwa penerapan QR Code ini dapat diandalkan dan sulit untuk dipalsukan (memiliki validitas yang baik)." name="e2" value={e2} onChange={setE2} />
                   <LikertQuestion number="E3" title="Pelacakan Dokumen" statement="Alur persetujuan dari status 'Pending' hingga 'Disetujui' memudahkan pelacakan status dokumen." name="e3" value={e3} onChange={setE3} />
                   
-                  <div className="space-y-4 pt-6 mt-6 border-t border-slate-200">
-                      <h3 className="text-lg md:text-xl font-extrabold text-slate-800">F. Pertanyaan Terbuka (Kualitatif)</h3>
-                      <div className="space-y-2">
-                          <label className="font-bold text-sm md:text-base text-slate-700 block">Apa kendala utama yang Anda temukan saat mensimulasikan penggunaan aplikasi ini?</label>
-                          <textarea value={kendala} onChange={(e) => setKendala(e.target.value)} className="w-full bg-slate-50 border-2 border-slate-200 p-3 md:p-4 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition resize-none h-20 md:h-24 text-sm md:text-base" placeholder="Tuliskan kendala Anda..."></textarea>
+                  <div className="space-y-3 pt-4 border-t border-slate-200">
+                      <h3 className="font-bold text-sm text-slate-800">F. Umpan Balik Kualitatif</h3>
+                      <div className="space-y-1">
+                          <label className="font-semibold text-slate-700 text-xs block">Apa kendala operasional utama yang Anda rasakan selama simulasi?</label>
+                          <textarea value={kendala} onChange={(e) => setKendala(e.target.value)} className="w-full bg-white border border-slate-300 p-2.5 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition resize-none h-20 text-xs" placeholder="Tulis tanggapan Anda..."></textarea>
                       </div>
-                      <div className="space-y-2">
-                          <label className="font-bold text-sm md:text-base text-slate-700 block">Apa fitur tambahan yang menurut Anda paling mendesak untuk ditambahkan di masa depan?</label>
-                          <textarea value={saran} onChange={(e) => setSaran(e.target.value)} className="w-full bg-slate-50 border-2 border-slate-200 p-3 md:p-4 rounded-xl focus:bg-white focus:border-emerald-500 focus:ring-2 outline-none transition resize-none h-20 md:h-24 text-sm md:text-base" placeholder="Tuliskan fitur tambahan/saran Anda..."></textarea>
+                      <div className="space-y-1">
+                          <label className="font-semibold text-slate-700 text-xs block">Apa fitur pelengkap yang paling dibutuhkan untuk menunjang kebutuhan ke depan?</label>
+                          <textarea value={saran} onChange={(e) => setSaran(e.target.value)} className="w-full bg-white border border-slate-300 p-2.5 rounded focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition resize-none h-20 text-xs" placeholder="Tulis saran tambahan Anda..."></textarea>
                       </div>
                   </div>
 
-                  <button type="submit" disabled={isSending} className="w-full flex items-center justify-center gap-2 bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition text-sm md:text-base shadow-lg disabled:opacity-70 mt-6">
-                      {isSending ? <RefreshCw className="animate-spin" size={20}/> : <Database size={20}/>}
-                      {isSending ? "Menyimpan ke Server..." : "Kirim & Simpan Data Kuisioner"}
+                  <button type="submit" disabled={isSending} className="w-full flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded font-semibold transition text-xs shadow disabled:opacity-75 mt-4">
+                      {isSending ? <RefreshCw className="animate-spin" size={14}/> : <Database size={14}/>}
+                      {isSending ? "Mengirim Data..." : "Kirim Tanggapan Kuesioner"}
                   </button>
               </form>
           </div>
@@ -1376,7 +1338,7 @@
 
       const handleSubmit = (e) => {
         e.preventDefault();
-        if(!selectedUstadz) return showToast("Pilih subjek terlebih dahulu!", "error");
+        if(!selectedUstadz) return showToast("Harap pilih ustadz pemohon!", "error");
         
         const uInfo = ustadzData.find(u => u.id === selectedUstadz);
         
@@ -1392,46 +1354,61 @@
         
         setDokumenReq([...dokumenReq, newReq]);
         setSelectedUstadz('');
-        showToast("Pengajuan dokumen berhasil dibuat.", "success");
+        showToast("Pengajuan berkas sukses dikirim.", "success");
       };
 
       return (
-        <div className="animate-fade-in space-y-4 md:space-y-6 max-w-6xl mx-auto">
-          <header className="mb-4 md:mb-6 border-b pb-3 md:pb-4"><h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Pengajuan Surat</h2><p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Sistem menarik data nama dari hasil pengujian memori lokal Anda.</p></header>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-            <div className="lg:col-span-1 bg-white p-5 md:p-8 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm h-fit">
-              <h3 className="font-extrabold text-base md:text-lg mb-4 md:mb-6 text-slate-800 flex items-center gap-2"><PlusCircle className="text-emerald-500" size={20}/> Pengajuan Baru</h3>
-              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+        <div className="fade-in space-y-5 max-w-6xl mx-auto">
+          <header className="border-b pb-3">
+            <h2 className="text-xl font-bold text-slate-800">Layanan Pembuatan Dokumen</h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Nama pemohon otomatis diintegrasikan dari database pengujian ustadz.</p>
+          </header>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-1 bg-white p-5 rounded border border-slate-200 shadow-sm h-fit">
+              <h3 className="font-bold text-sm mb-4 text-slate-800 flex items-center gap-1.5"><PlusCircle className="text-emerald-700" size={14}/> Pengajuan Baru</h3>
+              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 mb-1.5 md:mb-2 uppercase tracking-wide">Pilih Nama Sesuai Entri Data</label>
-                  <select className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none font-bold text-slate-700 focus:border-emerald-500 focus:ring-2 transition bg-slate-50 focus:bg-white text-sm md:text-base" value={selectedUstadz} onChange={(e) => setSelectedUstadz(e.target.value)} required>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Pilih Nama Sesuai Entri Data</label>
+                  <select className="w-full border border-slate-300 rounded p-2 outline-none font-medium text-slate-700 focus:border-emerald-600 transition bg-slate-50 focus:bg-white text-xs" value={selectedUstadz} onChange={(e) => setSelectedUstadz(e.target.value)} required>
                     <option value="">-- Pilih --</option>
                     {ustadzData.map(u => <option key={u.id} value={u.id}>{u.nama}</option>)}
                   </select>
-                  {ustadzData.length === 0 && <p className="text-[10px] md:text-xs text-amber-600 mt-2 font-medium bg-amber-50 p-2 rounded border border-amber-100">Database lokal kosong. Masuk ke modul Simulasi Entri Ustadz terlebih dahulu.</p>}
+                  {ustadzData.length === 0 && <p className="text-[10px] text-amber-700 mt-2 bg-amber-50 p-2 rounded border border-amber-200 font-medium leading-relaxed">Pangkalan data kosong. Isi data ustadz terlebih dahulu di menu Entri.</p>}
                 </div>
                 <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 mb-1.5 md:mb-2 uppercase tracking-wide">Kategori Dokumen Legal</label>
-                  <select className="w-full border-2 border-slate-200 rounded-xl p-3 outline-none font-bold text-slate-700 focus:border-emerald-500 focus:ring-2 transition bg-slate-50 focus:bg-white text-sm md:text-base" value={jenisSurat} onChange={(e) => setJenisSurat(e.target.value)}>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Jenis Layanan Dokumen</label>
+                  <select className="w-full border border-slate-300 rounded p-2 outline-none font-medium text-slate-700 focus:border-emerald-600 transition bg-slate-50 focus:bg-white text-xs" value={jenisSurat} onChange={(e) => setJenisSurat(e.target.value)}>
                     <option>Surat Tugas Mengajar</option><option>Surat Keterangan Aktif</option><option>Surat Rekomendasi</option>
                   </select>
                 </div>
-                <button type="submit" disabled={ustadzData.length === 0} className="w-full bg-slate-800 text-white py-3 md:py-4 rounded-xl font-bold hover:bg-slate-900 disabled:opacity-50 transition-all shadow-lg mt-2 md:mt-4 text-sm md:text-base">Kirim ke Meja Kepala</button>
+                <button type="submit" disabled={ustadzData.length === 0} className="w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded font-semibold transition shadow-sm mt-1 text-xs">Kirim Pengajuan ke Pimpinan</button>
               </form>
             </div>
-            <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col w-full">
-              <div className="p-4 md:p-6 bg-slate-50 border-b border-slate-100"><h3 className="font-extrabold text-slate-800 text-sm md:text-base">Daftar Tunggu & Riwayat</h3></div>
+            
+            <div className="lg:col-span-2 bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col w-full">
+              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200"><h3 className="font-bold text-slate-800 text-xs">Antrean Persetujuan Berkas</h3></div>
               <div className="flex-1 overflow-x-auto w-full">
-                <table className="w-full text-left text-xs md:text-sm text-slate-600 whitespace-nowrap md:whitespace-normal">
-                  <thead className="bg-white border-b border-slate-100 uppercase text-[9px] md:text-[10px] font-extrabold tracking-widest text-slate-400"><tr><th className="p-3 md:p-5">Nama Lengkap</th><th className="p-3 md:p-5">Kategori Dokumen</th><th className="p-3 md:p-5">Status</th></tr></thead>
+                <table className="w-full text-left text-xs text-slate-600">
+                  <thead className="bg-slate-50/50 border-b border-slate-200 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                     <tr><th className="p-3">Nama Lengkap</th><th className="p-3">Jenis Berkas</th><th className="p-3">Status Verifikasi</th></tr>
+                  </thead>
                   <tbody>
                     {dokumenReq.map(req => (
-                      <tr key={req.id} className="border-b border-slate-50 hover:bg-slate-50">
-                        <td className="p-3 md:p-5 font-bold text-slate-800">{req.nama}</td><td className="p-3 md:p-5 font-medium">{req.jenis}</td>
-                        <td className="p-3 md:p-5">{req.status === 'Pending' ? <span className="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 w-max"><Clock size={10}/> Review Pimpinan</span> : <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1 w-max"><CheckCircle size={10}/> Dokumen TTE Terbit</span>}</td>
+                      <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td className="p-3 font-semibold text-slate-800">{req.nama}</td>
+                        <td className="p-3 font-medium text-slate-700">{req.jenis}</td>
+                        <td className="p-3">
+                           {req.status === 'Pending' ? (
+                              <span className="bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 w-max"><Clock size={10}/> Peninjauan Pimpinan</span>
+                           ) : (
+                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 w-max"><CheckCircle size={10}/> Sah (TTE Terbit)</span>
+                           )}
+                        </td>
                       </tr>
                     ))}
-                    {dokumenReq.length === 0 && <tr><td colSpan="3" className="text-center p-10 md:p-16"><FileText size={36} className="mx-auto text-slate-300 mb-3"/><p className="text-slate-400 font-medium text-xs md:text-sm">Belum ada pengajuan surat.</p></td></tr>}
+                    {dokumenReq.length === 0 && (
+                       <tr><td colSpan="3" className="text-center p-12 text-slate-400 font-medium text-xs"><FileText size={24} className="mx-auto text-slate-300 mb-2"/><p>Belum ada rekaman permohonan surat.</p></td></tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1445,25 +1422,34 @@
       const handleApprove = (reqId) => {
         const generatedDocId = `DOC-LPQ-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
         setDokumenReq(dokumenReq.map(req => req.id === reqId ? { ...req, status: 'Disetujui', docId: generatedDocId } : req));
-        showToast("Dokumen disetujui. Tanda Tangan QR berhasil digenerate.", "success");
+        showToast("Legalisasi dokumen berhasil menggunakan Tanda Tangan Elektronik (TTE).", "success");
       };
       const pendingReqs = dokumenReq.filter(r => r.status === 'Pending');
 
       return (
-        <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in max-w-5xl mx-auto w-full">
-          <div className="p-4 md:p-6 bg-amber-50 border-b border-amber-100 flex items-center gap-2 md:gap-3"><AlertCircle className="text-amber-600" size={20}/><h3 className="font-extrabold text-amber-900 text-sm md:text-lg">Menunggu Persetujuan Anda</h3></div>
-          <div className="overflow-x-auto w-full p-2 md:p-4">
-            <table className="w-full text-left text-xs md:text-sm text-slate-600 whitespace-nowrap md:whitespace-normal">
-              <thead className="uppercase text-[9px] md:text-[10px] font-extrabold tracking-widest text-slate-400 border-b border-slate-100"><tr><th className="p-3 md:p-4">Identitas Pemohon</th><th className="p-3 md:p-4">Klasifikasi Surat</th><th className="p-3 md:p-4 text-right">Otorisasi</th></tr></thead>
+        <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden fade-in max-w-5xl mx-auto w-full">
+          <div className="px-4 py-3 bg-amber-50/50 border-b border-amber-100 flex items-center gap-2"><AlertCircle className="text-amber-600" size={14}/><h3 className="font-bold text-amber-900 text-xs md:text-sm">Menunggu Legalisasi Pimpinan</h3></div>
+          <div className="overflow-x-auto w-full p-2">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="text-[10px] font-bold tracking-wider text-slate-400 uppercase border-b border-slate-200">
+                 <tr><th className="p-3">Nama Pemohon</th><th className="p-3">Jenis Berkas</th><th className="p-3 text-right">Otorisasi</th></tr>
+              </thead>
               <tbody>
                 {pendingReqs.map(req => (
-                  <tr key={req.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="p-3 md:p-4"><p className="font-black text-slate-800 text-sm md:text-base">{req.nama}</p><p className="text-[10px] md:text-xs font-mono text-slate-400 mt-0.5">{req.id}</p></td>
-                    <td className="p-3 md:p-4 font-semibold text-slate-700">{req.jenis}</td>
-                    <td className="p-3 md:p-4 text-right"><button onClick={() => handleApprove(req.id)} className="bg-emerald-600 text-white px-3 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold hover:bg-emerald-700 transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5 md:gap-2 ml-auto"><QrCode size={12}/> Setujui (TTE)</button></td>
+                  <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                    <td className="p-3">
+                       <p className="font-bold text-slate-800 text-sm">{req.nama}</p>
+                       <p className="text-[10px] font-mono text-slate-400 mt-0.5">{req.id}</p>
+                    </td>
+                    <td className="p-3 font-semibold text-slate-600">{req.jenis}</td>
+                    <td className="p-3 text-right">
+                       <button onClick={() => handleApprove(req.id)} className="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-[10px] font-bold transition shadow-sm flex items-center gap-1.5 ml-auto"><QrCode size={12}/> Terbitkan TTE</button>
+                    </td>
                   </tr>
                 ))}
-                {pendingReqs.length === 0 && <tr><td colSpan="3" className="text-center p-10 md:p-20 text-slate-400 font-medium text-xs md:text-sm"><CheckCircle size={36} className="mx-auto mb-3 text-slate-200"/>Semua dokumen telah diperiksa.</td></tr>}
+                {pendingReqs.length === 0 && (
+                   <tr><td colSpan="3" className="text-center p-12 text-slate-400 font-medium text-xs"><CheckCircle size={24} className="mx-auto mb-2 text-slate-200"/>Semua berkas pengajuan telah ditandatangani.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -1476,81 +1462,83 @@
       const approvedReqs = dokumenReq.filter(r => r.status === 'Disetujui');
 
       return (
-        <div className="animate-fade-in print:m-0 print:p-0 max-w-6xl mx-auto w-full">
-          <header className="mb-6 md:mb-8 border-b pb-3 md:pb-4 print:hidden">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800">Arsip Dokumen</h2>
-            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Dokumen resmi yang telah divalidasi siap dicetak.</p>
+        <div className="fade-in print:m-0 print:p-0 max-w-6xl mx-auto w-full">
+          <header className="mb-5 border-b pb-3 print:hidden">
+            <h2 className="text-xl font-bold text-slate-800">Arsip Legalisasi Dokumen</h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Dokumen berstempel kode QR digital siap cetak dan divalidasi publik.</p>
           </header>
 
           {!selectedDoc ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {approvedReqs.map(doc => (
-                <div key={doc.id} className="bg-white p-5 md:p-7 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition group flex flex-col justify-between">
+                <div key={doc.id} className="bg-white p-4 rounded border border-slate-200 shadow-sm hover:border-slate-300 transition flex flex-col justify-between">
                   <div>
-                     <div className="flex justify-between items-start mb-3 md:mb-4">
-                        <div className="bg-slate-100 p-2 md:p-3 rounded-xl md:rounded-2xl text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition"><FileText size={20} /></div>
-                        <span className="text-[9px] md:text-[10px] font-mono font-bold bg-slate-50 px-2 py-1 rounded-md md:rounded-lg border text-slate-500">{doc.docId}</span>
+                     <div className="flex justify-between items-start mb-3">
+                        <div className="bg-slate-100 p-2 rounded text-slate-600"><FileText size={16} /></div>
+                        <span className="text-[9px] font-mono font-bold bg-slate-50 px-2 py-0.5 rounded border text-slate-500">{doc.docId}</span>
                      </div>
-                     <h4 className="font-extrabold text-slate-800 text-base md:text-lg line-clamp-2 leading-tight">{doc.jenis}</h4>
-                     <p className="text-xs md:text-sm text-slate-500 mt-1 md:mt-2 font-medium">A.n. <b className="text-slate-700">{doc.nama}</b></p>
+                     <h4 className="font-bold text-slate-800 text-sm leading-snug">{doc.jenis}</h4>
+                     <p className="text-xs text-slate-500 mt-1 font-medium">Atas Nama: <b className="text-slate-700">{doc.nama}</b></p>
                   </div>
-                  <button onClick={() => setSelectedDoc(doc)} className="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-bold mt-4 md:mt-6 group-hover:bg-emerald-600 group-hover:border-emerald-600 group-hover:text-white transition flex items-center justify-center gap-2"><Search size={14}/> Pratinjau Surat</button>
+                  <button onClick={() => setSelectedDoc(doc)} className="w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 py-1.5 rounded text-xs font-semibold mt-4 transition flex items-center justify-center gap-1.5"><Search size={12}/> Pratinjau Surat</button>
                 </div>
               ))}
-              {approvedReqs.length === 0 && <div className="col-span-full text-center py-16 md:py-24 bg-white border-2 border-dashed border-slate-200 rounded-2xl md:rounded-3xl"><FileSearch size={36} className="mx-auto text-slate-300 mb-3"/><p className="font-bold text-slate-400 text-sm">Belum ada dokumen diterbitkan.</p></div>}
+              {approvedReqs.length === 0 && (
+                 <div className="col-span-full text-center py-16 bg-white border border-dashed border-slate-200 rounded"><FileSearch size={24} className="mx-auto text-slate-300 mb-2"/><p className="font-semibold text-slate-400 text-xs">Belum ada surat yang terbit.</p></div>
+              )}
             </div>
           ) : (
-            <div className="bg-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl border border-slate-300 max-w-4xl mx-auto print:shadow-none print:border-none print:bg-white overflow-hidden w-full flex flex-col">
+            <div className="bg-slate-300 rounded shadow-md border border-slate-400 max-w-4xl mx-auto print:shadow-none print:border-none print:bg-white overflow-hidden w-full flex flex-col">
               
-              <div className="bg-slate-800 p-3 md:p-5 flex flex-col md:flex-row justify-between items-center text-white print:hidden gap-3 w-full">
-                <span className="font-mono text-xs md:text-sm font-bold flex items-center gap-2"><ClipboardList size={16}/> Pratinjau Kertas A4</span>
-                <div className="flex gap-2 md:gap-3 w-full md:w-auto">
-                  <button onClick={() => window.print()} className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-3 py-2 md:px-5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm flex items-center justify-center gap-2 transition"><Download size={14}/> Cetak PDF</button>
-                  <button onClick={() => setSelectedDoc(null)} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-3 py-2 md:px-5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition">Tutup</button>
+              <div className="bg-slate-800 p-3 flex flex-col md:flex-row justify-between items-center text-white print:hidden gap-3 w-full">
+                <span className="font-mono text-xs font-bold flex items-center gap-1.5"><ClipboardList size={14}/> Pratinjau Lembar Surat A4</span>
+                <div className="flex gap-2 w-full md:w-auto">
+                  <button onClick={() => window.print()} className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-1.5 rounded text-xs flex items-center justify-center gap-1.5 transition"><Download size={12}/> Cetak PDF</button>
+                  <button onClick={() => setSelectedDoc(null)} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded text-xs font-bold transition">Tutup</button>
                 </div>
               </div>
               
               <div className="w-full overflow-x-auto p-4 md:p-8 bg-slate-200 print:p-0 print:bg-white custom-scrollbar flex justify-center">
-                <div className="bg-white text-black shadow-2xl print:shadow-none flex-shrink-0" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
+                <div className="bg-white text-black shadow-lg print:shadow-none shrink-0" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
                   <div className="flex flex-col mb-8">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-[110px] h-[110px] flex items-center justify-center flex-shrink-0">
-                        {testerInfo?.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain" /> : <div className="w-20 h-20 border-2 border-gray-300 border-dashed rounded-full flex items-center justify-center text-gray-400 font-bold text-xs">LOGO</div>}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="w-[90px] h-[90px] flex items-center justify-center shrink-0">
+                        {testerInfo?.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain" /> : <div className="w-16 h-16 border border-gray-300 border-dashed rounded flex items-center justify-center text-gray-400 font-bold text-[10px]">LOGO</div>}
                       </div>
                       <div className="flex-1 text-center px-4">
-                        <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "14pt", fontWeight: "bold", textTransform: "uppercase", marginBottom: "4px" }}>TAMAN PENDIDIKAN AL QURAN</h1>
-                        <h2 style={{ fontFamily: "'Bookman Old Style', serif", fontSize: "18pt", fontWeight: "bold", marginBottom: "4px" }}>{testerInfo?.lembaga || '(Nama Lembaga)'}</h2>
-                        <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "12pt" }}>Nomor Izin Operasional: {testerInfo?.nomorIjop || '-'} <br/> NSDT : {testerInfo?.nomorStatistik || '-'}</p>
+                        <h1 style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "14pt", fontWeight: "bold", textTransform: "uppercase", marginBottom: "2px" }}>TAMAN PENDIDIKAN AL QURAN</h1>
+                        <h2 style={{ fontFamily: "'Bookman Old Style', serif", fontSize: "16pt", fontWeight: "bold", marginBottom: "2px" }}>{testerInfo?.lembaga || '(Nama Lembaga)'}</h2>
+                        <p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "10pt" }}>Nomor Izin Operasional: {testerInfo?.nomorIjop || '-'} <br/> NSDT : {testerInfo?.nomorStatistik || '-'}</p>
                       </div>
-                      <div className="w-[110px] h-[110px] flex-shrink-0 opacity-0 pointer-events-none"></div>
+                      <div className="w-[90px] h-[90px] shrink-0 opacity-0 pointer-events-none"></div>
                     </div>
-                    <div className="bg-black w-full py-1.5 px-4 text-center mb-1"><p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "11pt", color: "white", margin: 0 }}>Sekretariat : {testerInfo?.alamat}</p></div>
-                    <div className="border-b-[4px] border-black w-full mb-1"></div><div className="border-b border-black w-full"></div>
+                    <div className="bg-black w-full py-1 px-4 text-center mb-1"><p style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "9pt", color: "white", margin: 0 }}>Sekretariat : {testerInfo?.alamat}</p></div>
+                    <div className="border-b-[3px] border-black w-full mb-1"></div><div className="border-b border-black w-full"></div>
                   </div>
                   
-                  <h3 className="text-xl font-bold underline mb-10 uppercase tracking-widest text-center mt-6">{selectedDoc.jenis}</h3>
-                  <p className="text-left mb-6 text-lg leading-relaxed">Yang bertanda tangan di bawah ini, Kepala {testerInfo?.lembaga || 'Lembaga Pendidikan Al-Quran'}, menerangkan dengan sesungguhnya bahwa:</p>
+                  <h3 className="text-lg font-bold underline mb-8 uppercase tracking-widest text-center mt-6" style={{ fontFamily: "'Times New Roman', Times, serif" }}>{selectedDoc.jenis}</h3>
+                  <p className="text-left mb-6 text-sm leading-relaxed">Yang bertanda tangan di bawah ini, Kepala {testerInfo?.lembaga || 'Lembaga Pendidikan Al-Quran'}, menerangkan dengan sesungguhnya bahwa:</p>
                   
-                  <table className="text-left mb-10 mx-auto w-10/12 text-lg">
+                  <table className="text-left mb-8 mx-auto w-11/12 text-sm leading-loose">
                     <tbody>
-                      <tr><td className="py-3 w-2/5 font-semibold align-top">Nama Lengkap</td><td className="py-3 px-3 align-top">:</td><td className="py-3 font-bold uppercase">{selectedDoc.nama}</td></tr>
-                      <tr><td className="py-3 font-semibold align-top">Tempat, Tgl Lahir</td><td className="py-3 px-3 align-top">:</td><td className="py-3 capitalize">{selectedDoc.ttl}</td></tr>
-                      <tr><td className="py-3 font-semibold align-top">Alamat Domisili</td><td className="py-3 px-3 align-top">:</td><td className="py-3 leading-relaxed capitalize">{selectedDoc.alamat}</td></tr>
+                      <tr><td className="py-2 w-1/3 font-semibold align-top">Nama Lengkap</td><td className="py-2 px-2 align-top">:</td><td className="py-2 font-bold uppercase">{selectedDoc.nama}</td></tr>
+                      <tr><td className="py-2 font-semibold align-top">Tempat, Tgl Lahir</td><td className="py-2 px-2 align-top">:</td><td className="py-2 capitalize">{selectedDoc.ttl}</td></tr>
+                      <tr><td className="py-2 font-semibold align-top">Alamat Domisili</td><td className="py-2 px-2 align-top">:</td><td className="py-2 leading-relaxed capitalize">{selectedDoc.alamat}</td></tr>
                     </tbody>
                   </table>
                   
-                  <p className="text-left mb-20 text-lg leading-loose text-justify">Adalah benar yang bersangkutan merupakan tenaga pendidik/staf yang aktif di lembaga kami. Demikian dokumen administrasi fungsional ini dibuat secara sah melalui sistem terpadu untuk dapat dipergunakan sebagaimana mestinya.</p>
+                  <p className="text-left mb-16 text-sm leading-relaxed text-justify">Adalah benar yang bersangkutan merupakan tenaga pendidik/staf yang aktif di lembaga kami. Demikian dokumen administrasi fungsional ini dibuat secara sah melalui sistem terpadu untuk dapat dipergunakan sebagaimana mestinya.</p>
                   
                   <div className="flex justify-end pr-4">
                     <div className="text-center">
-                      <p className="mb-2 text-lg">{testerInfo?.alamat?.split(',')[0] || 'Kota'}, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                      <p className="mb-6 text-lg font-bold">Kepala Lembaga,</p>
-                      <div className="relative inline-block border-4 border-emerald-900 p-2 rounded-xl mb-3 bg-white">
-                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedDoc.docId}`} alt="QR Code TTE" className="w-28 h-28 mix-blend-multiply" />
-                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-3 py-0.5 text-[11px] font-black text-emerald-900 border-2 border-emerald-900 rounded-full">TTE SAH</div>
+                      <p className="mb-2 text-sm">{testerInfo?.alamat?.split(',')[0] || 'Kota'}, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="mb-4 text-sm font-bold">Kepala Lembaga,</p>
+                      <div className="relative inline-block border-2 border-emerald-900 p-1 rounded mb-2 bg-white">
+                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${selectedDoc.docId}`} alt="QR Code TTE" className="w-24 h-24 mix-blend-multiply" />
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white px-2 py-0.5 text-[9px] font-bold text-emerald-900 border border-emerald-900 rounded-full whitespace-nowrap">TTE SAH</div>
                       </div>
-                      <p className="text-lg font-bold underline underline-offset-4 uppercase">{testerInfo?.namaKepala || '..........................'}</p>
-                      <p className="text-sm font-mono font-bold text-slate-800 bg-slate-100 py-1.5 px-4 rounded-lg mt-3 uppercase border border-slate-300 w-max mx-auto">ID: {selectedDoc.docId}</p>
+                      <p className="text-sm font-bold underline underline-offset-4 uppercase">{testerInfo?.namaKepala || '..........................'}</p>
+                      <p className="text-[10px] font-mono font-bold text-slate-800 bg-slate-100 py-1 px-3 rounded border border-slate-300 w-max mx-auto mt-2">ID: {selectedDoc.docId}</p>
                     </div>
                   </div>
                 </div>
@@ -1563,8 +1551,8 @@
 
     function SidebarItem({ icon, label, active, onClick }) {
       return (
-        <button onClick={onClick} className={`w-full flex items-center gap-3 md:gap-4 px-4 py-3 md:px-5 md:py-3.5 rounded-xl md:rounded-2xl transition-all duration-300 font-bold text-xs md:text-sm ${active ? 'bg-emerald-50 text-emerald-800 shadow-md transform translate-x-2' : 'text-emerald-100 hover:bg-emerald-800/50 hover:text-white'}`}>
-          <div className="flex-shrink-0">{icon}</div> <span className="tracking-wide text-left flex-1 line-clamp-1">{label}</span>
+        <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded transition font-semibold text-xs ${active ? 'bg-emerald-800 text-white shadow' : 'text-emerald-100 hover:bg-emerald-900 hover:text-white'}`}>
+          <div className="shrink-0">{icon}</div> <span className="tracking-wide text-left flex-1 truncate">{label}</span>
         </button>
       );
     }
@@ -1583,14 +1571,12 @@
       const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
       const showToast = (message, type = 'info') => {
         setToast({ show: true, message, type });
-        setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 5000);
+        setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 4000);
       };
 
       useEffect(() => {
           localStorage.setItem('GLOBAL_DOCS', JSON.stringify(dokumenReq));
       }, [dokumenReq]);
-
-      const isKuisionerUnlocked = true;
 
       const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -1625,95 +1611,88 @@
       }
       
       return (
-        <div className="min-h-screen flex flex-col md:flex-row font-sans bg-[#F8FAFC]">
-          <div className="md:hidden bg-emerald-900 text-white p-4 flex justify-between items-center shadow-md relative z-40 mobile-header">
-             <div className="flex items-center gap-3">
-               <div className="bg-white p-1 rounded-lg w-8 h-8 flex justify-center items-center overflow-hidden">
-                   {currentRole === 'admin' ? <Activity color="#064e3b" size={20} /> : testerInfo?.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain" /> : <FileSignature color="#064e3b" size={20} />}
+        <div className="min-h-screen flex flex-col md:flex-row bg-[#F1F5F9]">
+          {/* Mobile Header */}
+          <div className="md:hidden bg-emerald-950 text-white p-4 flex justify-between items-center shadow-md relative z-40 mobile-header">
+             <div className="flex items-center gap-2">
+               <div className="bg-white p-1 rounded w-8 h-8 flex justify-center items-center overflow-hidden shrink-0">
+                   {currentRole === 'admin' ? <Activity color="#022c22" size={16} /> : testerInfo?.logo ? <img src={testerInfo.logo} className="w-full h-full object-contain" /> : <FileSignature color="#022c22" size={16} />}
                </div>
-               <div>
-                  <h1 className="font-bold text-sm leading-tight line-clamp-1">{currentRole === 'admin' ? 'Pusat Riset' : (testerInfo?.lembaga || 'Portal Riset')}</h1>
-                  <p className="text-emerald-400 text-[10px] uppercase font-bold tracking-widest">{currentRole}</p>
+               <div className="overflow-hidden">
+                  <h1 className="font-bold text-xs truncate">{currentRole === 'admin' ? 'Pusat Analisis' : (testerInfo?.lembaga || 'Panel LPQ')}</h1>
+                  <p className="text-emerald-400 text-[9px] uppercase font-bold tracking-wider">{currentRole}</p>
                </div>
              </div>
-             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 bg-emerald-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                {isMobileMenuOpen ? <X size={20}/> : <MenuIcon size={20}/>}
+             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 bg-emerald-900 rounded focus:outline-none">
+                {isMobileMenuOpen ? <X size={16}/> : <MenuIcon size={16}/>}
              </button>
           </div>
 
           {isMobileMenuOpen && (
-              <div className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
+              <div className="fixed inset-0 bg-black/50 z-40 md:hidden transition" onClick={() => setIsMobileMenuOpen(false)}></div>
           )}
 
-          <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 fixed md:sticky top-0 left-0 h-[100dvh] w-[280px] md:w-72 bg-emerald-900 text-white flex flex-col shadow-2xl z-50 print:hidden overflow-hidden`}>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-800 rounded-full blur-3xl opacity-50 -translate-y-10 translate-x-10 pointer-events-none"></div>
-            
-            <div className="p-6 md:p-8 text-center border-b border-emerald-800 relative z-10 hidden md:block">
-              <div className="bg-white p-2 rounded-2xl w-24 h-24 mx-auto mb-4 flex items-center justify-center shadow-lg overflow-hidden border-2 border-emerald-100">
-                {currentRole === 'admin' ? <Activity color="#064e3b" size={48} /> : testerInfo?.logo ? <img src={testerInfo.logo} alt="Logo" className="w-full h-full object-contain" /> : <FileSignature color="#064e3b" size={48} />}
+          {/* Sidebar */}
+          <aside className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-200 fixed md:sticky top-0 left-0 h-screen w-[240px] bg-emerald-950 text-white flex flex-col z-50 print:hidden overflow-hidden shrink-0 shadow-md`}>
+            <div className="p-5 text-center border-b border-emerald-900 relative z-10 hidden md:block">
+              <div className="bg-white p-1.5 rounded w-16 h-16 mx-auto mb-3 flex items-center justify-center shadow overflow-hidden">
+                {currentRole === 'admin' ? <Activity color="#022c22" size={32} /> : testerInfo?.logo ? <img src={testerInfo.logo} alt="Logo" className="w-full h-full object-contain" /> : <FileSignature color="#022c22" size={32} />}
               </div>
-              <h1 className="font-bold text-xl leading-tight line-clamp-2 tracking-wide text-emerald-50">{currentRole === 'admin' ? 'Pusat Riset Bab 4' : (testerInfo?.lembaga || 'Portal Riset')}</h1>
-              <p className="text-emerald-400 text-xs mt-2 px-2 uppercase font-semibold tracking-widest">{currentRole === 'admin' ? 'Dashboard Peneliti' : 'SIAKAD Prototype'}</p>
+              <h1 className="font-bold text-sm leading-snug truncate text-emerald-50">{currentRole === 'admin' ? 'Pusat Statistik' : (testerInfo?.lembaga || 'SIAKAD Portal')}</h1>
+              <p className="text-emerald-400 text-[10px] mt-1 font-semibold tracking-wider uppercase">{currentRole === 'admin' ? 'Dashboard Utama' : 'Prototype System'}</p>
             </div>
             
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto relative z-10 custom-scrollbar">
+            <nav className="flex-1 p-3 space-y-1 overflow-y-auto relative z-10 custom-scrollbar">
               {currentRole === 'admin' && (
                 <SidebarItem icon={<LineChart />} label="Dashboard Statistik" active={activeTab === 'admin-dashboard'} onClick={() => handleTabChange('admin-dashboard')} />
               )}
               {currentRole === 'operator' && (
                 <React.Fragment>
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-4 px-3">Eksperimen Waktu</p>
-                  <SidebarItem icon={<Users />} label="Simulasi Entri Santri" active={activeTab === 'ocr-santri'} onClick={() => handleTabChange('ocr-santri')} />
-                  <SidebarItem icon={<UserCheck />} label="Simulasi Entri Ustadz" active={activeTab === 'ocr-ustadz'} onClick={() => handleTabChange('ocr-ustadz')} />
-                  <SidebarItem icon={<BarChart />} label="Laporan Metrik" active={activeTab === 'report'} onClick={() => handleTabChange('report')} />
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 mt-3 px-3">Modul Pengukuran</p>
+                  <SidebarItem icon={<Users />} label="Entri Data Santri" active={activeTab === 'ocr-santri'} onClick={() => handleTabChange('ocr-santri')} />
+                  <SidebarItem icon={<UserCheck />} label="Entri Data Ustadz" active={activeTab === 'ocr-ustadz'} onClick={() => handleTabChange('ocr-ustadz')} />
+                  <SidebarItem icon={<BarChart />} label="Catatan Hasil Log" active={activeTab === 'report'} onClick={() => handleTabChange('report')} />
                   
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Evaluasi Data Bab 4</p>
-                  <SidebarItem 
-                      icon={isKuisionerUnlocked ? <MessageSquare /> : <Lock />} 
-                      label="Kuisioner Kepuasan" 
-                      active={activeTab === 'kuisioner'} 
-                      onClick={() => {
-                          if (isKuisionerUnlocked) handleTabChange('kuisioner');
-                          else showToast("Selesaikan minimal 1x OCR Santri, 1x OCR Ustadz, dan 1x Manual untuk membuka!", "error");
-                      }} 
-                  />
-
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-6 px-3">Modul Administrasi</p>
-                  <SidebarItem icon={<FileText />} label="Pengajuan Surat" active={activeTab === 'request'} onClick={() => handleTabChange('request')} />
-                  <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Dokumen" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 mt-4 px-3">Layanan Publik</p>
+                  <SidebarItem icon={<FileText />} label="Pembuatan Surat" active={activeTab === 'request'} onClick={() => handleTabChange('request')} />
+                  <SidebarItem icon={<FileCheck />} label="Arsip & Cetak Berkas" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
+                  
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 mt-4 px-3">Evaluasi Riset</p>
+                  <SidebarItem icon={<MessageSquare />} label="Kuesioner Likert" active={activeTab === 'kuisioner'} onClick={() => handleTabChange('kuisioner')} />
                 </React.Fragment>
               )}
               {currentRole === 'kepala' && (
                 <React.Fragment>
-                  <p className="text-[10px] font-extrabold text-emerald-500/80 uppercase tracking-widest mb-2 mt-4 px-3">Otoritas Pimpinan</p>
-                  <SidebarItem icon={<ShieldCheck />} label="Approval Pengajuan" active={activeTab === 'approval'} onClick={() => handleTabChange('approval')} />
-                  <SidebarItem icon={<FileCheck />} label="Arsip Dokumen Resmi" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 mt-3 px-3">Otorisasi Surat</p>
+                  <SidebarItem icon={<ShieldCheck />} label="Persetujuan Dokumen" active={activeTab === 'approval'} onClick={() => handleTabChange('approval')} />
+                  <SidebarItem icon={<FileCheck />} label="Arsip Berkas Sah" active={activeTab === 'arsip'} onClick={() => handleTabChange('arsip')} />
                 </React.Fragment>
               )}
             </nav>
 
-            <div className="p-4 md:p-5 bg-emerald-950/50 backdrop-blur-md relative z-10 border-t border-emerald-800/50 pb-8 md:pb-5">
-              <div className="flex items-center gap-3 mb-4 md:mb-5 px-1">
-                <div className="bg-emerald-800 rounded-xl p-2 shadow-inner border border-emerald-700/50"><User size={20} className="text-emerald-300" /></div>
+            <div className="p-4 bg-emerald-990 relative z-10 border-t border-emerald-900 pb-6">
+              <div className="flex items-center gap-2.5 mb-3 px-1">
+                <div className="bg-emerald-900 rounded p-1.5 border border-emerald-800"><User size={14} className="text-emerald-300" /></div>
                 <div className="overflow-hidden">
-                  <p className="font-bold text-sm capitalize truncate text-emerald-50">{currentRole === 'admin' ? 'Peneliti Utama' : testerInfo?.nama}</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 truncate">Sesi Aktif ({currentRole})</p>
+                  <p className="font-bold text-xs capitalize truncate text-emerald-50">{currentRole === 'admin' ? 'Administrator' : testerInfo?.nama}</p>
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-emerald-400 truncate">Sesi Aktif ({currentRole})</p>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                  <button onClick={() => { setCurrentRole(null); setActiveTab('dashboard'); }} className="w-full flex items-center justify-center gap-2 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500 hover:text-white py-2.5 rounded-xl transition-all duration-200 font-bold text-sm border border-emerald-500/30 shadow-sm">
-                    <RefreshCw size={16} /> {currentRole === 'admin' ? 'Keluar Dashboard Peneliti' : 'Ganti Role Akses'}
+              <div className="flex flex-col gap-1.5">
+                  <button onClick={() => { setCurrentRole(null); setActiveTab('dashboard'); }} className="w-full flex items-center justify-center gap-1.5 bg-emerald-800 hover:bg-emerald-700 text-white py-2 rounded transition font-bold text-xs border border-emerald-700">
+                    <RefreshCw size={12} /> {currentRole === 'admin' ? 'Kembali' : 'Ganti Akses Peran'}
                   </button>
                   {currentRole !== 'admin' && (
-                      <button onClick={() => { setTesterInfo(null); setCurrentRole(null); setActiveTab('dashboard'); }} className="w-full flex items-center justify-center gap-2 bg-transparent text-emerald-400 hover:text-red-400 hover:bg-red-500/10 py-2 rounded-xl transition-all duration-200 font-bold text-xs">
-                        <LogOut size={14} /> Reset Setup Lembaga
+                      <button onClick={() => { setTesterInfo(null); setCurrentRole(null); setActiveTab('dashboard'); }} className="w-full flex items-center justify-center gap-1 bg-transparent text-emerald-400 hover:text-red-400 py-1 transition font-semibold text-[10px]">
+                        <LogOut size={10} /> Reset Setup Lembaga
                       </button>
                   )}
               </div>
             </div>
           </aside>
 
-          <main className="flex-1 p-4 md:p-6 lg:p-10 overflow-y-auto print:p-0 print:m-0 print:bg-white relative selection:bg-emerald-200 w-full">
+          {/* Main Workspace */}
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto print:p-0 print:m-0 print:bg-white relative w-full">
             {activeTab === 'admin-dashboard' && <AdminDashboardView showToast={showToast} />}
             {activeTab === 'ocr-santri' && <ExperimentEntryView targetType="santri" targetData={santriData} setTargetData={setSantriData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
             {activeTab === 'ocr-ustadz' && <ExperimentEntryView targetType="ustadz" targetData={ustadzData} setTargetData={setUstadzData} researchLogs={researchLogs} setResearchLogs={setResearchLogs} testerInfo={testerInfo} showToast={showToast} />}
@@ -1724,18 +1703,18 @@
             {activeTab === 'arsip' && <ArsipView dokumenReq={dokumenReq} testerInfo={testerInfo} />}
             
             {activeTab === 'dashboard' && (
-              <div className="flex flex-col items-center justify-center min-h-[70vh] text-center text-emerald-900/60 animate-fade-in max-w-2xl mx-auto px-2">
-                <div className="bg-emerald-100/50 p-5 md:p-6 rounded-3xl mb-4 md:mb-6 shadow-inner border border-emerald-50">
-                  {currentRole === 'admin' ? <LineChart size={56} className="text-emerald-600" /> : <BookOpen size={56} className="text-emerald-600" />}
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-lg mx-auto px-2 fade-in">
+                <div className="bg-white p-4 rounded border border-slate-200 mb-4 shadow-sm text-slate-500">
+                  {currentRole === 'admin' ? <LineChart size={36} className="text-emerald-700" /> : <BookOpen size={36} className="text-emerald-700" />}
                 </div>
-                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-2 md:mb-3">Selamat Datang di SIAKAD</h2>
-                <p className="text-sm md:text-base text-slate-500 leading-relaxed px-2">
-                  Prototipe ini dirancang untuk penelitian eksperimental fungsional perangkat lunak. Sistem menggunakan <b>Gemini AI</b> untuk mengekstrak data dari dokumen.
+                <h2 className="text-lg font-bold text-slate-800 mb-1">Portal Eksperimen SIAKAD LPQ</h2>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  Selamat datang di instrumen pengisian data berbasis otomatisasi AI. Gunakan menu navigasi sebelah kiri untuk menguji efektivitas operasional tata usaha.
                 </p>
-                <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2 md:gap-3">
-                    <span className="px-3 md:px-4 py-1.5 md:py-2 bg-white shadow-sm border rounded-full text-[10px] md:text-xs font-bold text-slate-600 flex items-center gap-1.5"><ShieldCheck size={14} className="text-emerald-500"/> Privasi Terjamin</span>
-                    <span className="px-3 md:px-4 py-1.5 md:py-2 bg-white shadow-sm border rounded-full text-[10px] md:text-xs font-bold text-slate-600 flex items-center gap-1.5"><Timer size={14} className="text-blue-500"/> Akurasi Waktu</span>
-                    <span className="px-3 md:px-4 py-1.5 md:py-2 bg-white shadow-sm border rounded-full text-[10px] md:text-xs font-bold text-slate-600 flex items-center gap-1.5"><Database size={14} className="text-purple-500"/> AI Powered</span>
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                    <span className="px-3 py-1 bg-white border rounded shadow-xs text-[10px] font-bold text-slate-600 flex items-center gap-1"><ShieldCheck size={12} className="text-emerald-600"/> Keamanan Terjamin</span>
+                    <span className="px-3 py-1 bg-white border rounded shadow-xs text-[10px] font-bold text-slate-600 flex items-center gap-1"><Timer size={12} className="text-emerald-600"/> Analisis Waktu Real-time</span>
+                    <span className="px-3 py-1 bg-white border rounded shadow-xs text-[10px] font-bold text-slate-600 flex items-center gap-1"><Database size={12} className="text-emerald-600"/> Didukung Gemini AI</span>
                 </div>
               </div>
             )}
