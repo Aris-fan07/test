@@ -633,13 +633,39 @@
           )}
 
           {!isSantri && (
-              <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm">
-                 <h4 className="font-extrabold text-pink-800 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Informasi Ibu Kandung</h4>
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                    {renderInput('ibuNama', 'Nama Ibu')}
-                    {renderInput('ibuStatusPernikahan', 'Status Pernikahan Ibu', 'Contoh: Cerai Mati')}
-                    {renderInput('ibuNoKk', 'Nomor KK Ibu')}
-                 </div>
+              <div className="space-y-4 md:space-y-6">
+                  <div className="bg-purple-50/50 p-4 md:p-6 rounded-2xl border border-purple-100 shadow-sm">
+                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-5 gap-2">
+                         <h4 className="font-extrabold text-purple-800 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Status Perkawinan</h4>
+                         <select name="statusPernikahan" value={formData.statusPernikahan || ''} onChange={handleChange} className="text-[10px] md:text-xs font-bold border-2 border-purple-200 rounded p-1.5 md:p-2 outline-none bg-white text-purple-800 w-full md:w-auto">
+                             <option value="">-- Pilih --</option>
+                             <option value="Belum Kawin">Belum Kawin</option>
+                             <option value="Kawin">Kawin</option>
+                             <option value="Janda/Duda">Janda/Duda</option>
+                         </select>
+                     </div>
+                     
+                     {(formData.statusPernikahan === 'Kawin' || formData.statusPernikahan === 'Janda/Duda') && (
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                            {renderInput('pasanganNama', 'Nama Suami/Istri', '', formData.statusPernikahan === 'Kawin')}
+                            {renderInput('jumlahAnak', 'Jumlah Anak', 'Contoh: 2')}
+                            {renderInput('noKk', 'Nomor KK', '16 Digit Angka')}
+                         </div>
+                     )}
+			
+                     {formData.statusPernikahan === 'Belum Kawin' && (
+                         <div className="grid grid-cols-1 gap-3 md:gap-4">
+                            {renderInput('noKk', 'Nomor KK', '16 Digit Angka')}
+                         </div>
+                     )}
+                  </div>
+
+                  <div className="bg-pink-50/50 p-4 md:p-6 rounded-2xl border border-pink-100 shadow-sm">
+                     <h4 className="font-extrabold text-pink-800 mb-4 md:mb-5 flex items-center gap-2 text-sm md:text-base"><UserCheck size={16}/> Informasi Ibu Kandung</h4>
+                     <div className="grid grid-cols-1 gap-3 md:gap-4">
+                        {renderInput('ibuNama', 'Nama Ibu')}
+                     </div>
+                  </div>
               </div>
           )}
           
